@@ -24,7 +24,7 @@ create table if not exists todos (
   status           text not null default 'pending' check (status in ('pending','in_progress','done','snoozed')),
   importance       int not null default 3 check (importance between 1 and 5),
   reluctance_score numeric(4,1) not null default 5 check (reluctance_score between 0 and 10),
-  avoidance_score  numeric(6,2) not null default 11,  -- importance*2 + reluctance_score + snoozed*0.5
+  avoidance_score  numeric(6,2) not null default 11,
   estimated_minutes int,
   due_date         date,
   source           text not null default 'manual' check (source in ('manual','ai-extracted','memo')),
@@ -41,7 +41,7 @@ create table if not exists notes (
   id           uuid primary key default uuid_generate_v4(),
   task_id      uuid references tasks(id) on delete set null,
   note_type    text not null default 'memo' check (note_type in ('meeting','idea','memo')),
-  raw_content  text not null,  -- 원문 항상 보관
+  raw_content  text not null,
   created_at   timestamptz not null default now()
 );
 
@@ -94,8 +94,10 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger tasks_updated_at before update on tasks
+drop trigger if exists tasks_updated_at on tasks;
+create trigger tasks_updated_at before update on tasks
   for each row execute function update_updated_at();
 
-create or replace trigger todos_updated_at before update on todos
+drop trigger if exists todos_updated_at on todos;
+create trigger todos_updated_at before update on todos
   for each row execute function update_updated_at();
