@@ -1,0 +1,35 @@
+# Code Ownership
+# 참조: docs/ARCHITECTURE.md#레이어-구조
+# 패턴 문서: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: all changes require team review
+*                           @EddyJo
+
+# Architecture & harness (senior review required)
+AGENTS.md                   @EddyJo
+docs/ARCHITECTURE.md        @EddyJo
+docs/AGENT_RULES.md         @EddyJo
+lint/                       @EddyJo
+.github/workflows/          @EddyJo
+
+# Security-sensitive paths
+docs/SECURITY.md            @EddyJo
+.env*                       @EddyJo
+**/auth/**                  @EddyJo
+
+# AI service integration
+**/ai/**                    @EddyJo
+**/services/memo*           @EddyJo
+
+# Database & migrations
+**/prisma/**                @EddyJo
+**/migrations/**            @EddyJo
+**/repositories/**          @EddyJo
+
+# Frontend
+apps/web/**                 @EddyJo
+packages/ui/**              @EddyJo
+
+# CI/CD
+.github/                    @EddyJo
+scripts/                    @EddyJo

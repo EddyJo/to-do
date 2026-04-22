@@ -1,0 +1,47 @@
+{
+  "title": "Todo App — Agent Activity",
+  "uid": "todo-agent-activity",
+  "schemaVersion": 38,
+  "refresh": "30s",
+  "tags": ["todo-app", "agent"],
+  "panels": [
+    {
+      "title": "Agent Tool Calls / min",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "sum(rate(agent_tool_calls_total[1m])) by (tool)" }]
+    },
+    {
+      "title": "Agent Session Duration p95",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(agent_session_duration_ms_bucket[5m])) by (le))"
+      }]
+    },
+    {
+      "title": "PR Open Rate (agent-open-pr.sh)",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "sum(increase(agent_pr_opened_total[24h]))" }]
+    },
+    {
+      "title": "Validation Failures",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "sum(rate(agent_validate_failures_total[5m])) by (step)" }]
+    },
+    {
+      "title": "Human Approval Required Events",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "sum(increase(agent_human_approval_required_total[1h]))" }]
+    },
+    {
+      "title": "Agent Audit Log",
+      "type": "logs",
+      "datasource": "Loki",
+      "targets": [{ "expr": "{service=\"agent\"} | json | line_format \"{{.tool}} {{.command}} -> {{.result}}\"" }]
+    }
+  ]
+}

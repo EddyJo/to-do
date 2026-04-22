@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 8 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 8 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  test:
+    name: Tests + Coverage
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: todo_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/todo_test
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 8 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm test --coverage
+      - name: Coverage gate (>=80%)
+        run: |
+          PCT=$(node -e "const c=require('./coverage/coverage-summary.json');console.log(c.total.lines.pct)")
+          echo "Coverage: ${PCT}%"
+          node -e "if(${PCT}<80){console.error('Coverage below 80%');process.exit(1)}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: TruffleHog scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+  pr-size:
+    name: PR Size Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Check PR size
+        run: |
+          FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          LINES=$(git diff origin/${{ github.base_ref }}...HEAD | grep -c '^[+-]' || true)
+          echo "Files changed: ${FILES}, Lines changed: ${LINES}"
+          if [ "$FILES" -gt 10 ]; then
+            echo "::warning::PR touches ${FILES} files (limit: 10). Consider splitting."
+          fi
+          if [ "$LINES" -gt 400 ]; then
+            echo "::warning::PR has ${LINES} line changes (limit: 400). Consider splitting."
+          fi
+
+  doc-sync:
+    name: Doc Sync Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Check docs updated with code
+        run: |
+          CODE_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep -E '^(apps|packages|services)/' | wc -l || true)
+          DOCS_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep -E '^docs/' | wc -l || true)
+          if [ "$CODE_CHANGED" -gt 0 ] && [ "$DOCS_CHANGED" -eq 0 ]; then
+            echo "::warning::Code changed without docs update. Check docs/ obligations in AGENTS.md."
+          fi
