@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getTodos, updateTodo, snoozeTodo } from '@/lib/db/todos'
 import { TodoCard } from '@/components/TodoCard'
 import { DailyQuote } from '@/components/DailyQuote'
+import { MorningRetro } from '@/components/MorningRetro'
 import type { Todo } from '@/types'
 
 const TODAY_COUNT = 5
@@ -63,6 +64,8 @@ export default function HomePage() {
           </Link>
         </div>
       </div>
+
+      <MorningRetro />
 
       <DailyQuote />
 
