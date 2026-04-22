@@ -33,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Do It First
               </Link>
               <div className="flex items-center gap-6 text-sm text-[#a0a0a0]">
+                <Link href="/capture" className="hover:text-white transition-colors">+ 입력</Link>
                 <Link href="/tasks" className="hover:text-white transition-colors">Tasks</Link>
                 <Link href="/review" className="hover:text-white transition-colors">Review Queue</Link>
               </div>

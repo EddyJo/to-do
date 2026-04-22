@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v '^/Users/a451776/project/to-do$')",
+      "Bash(ssh -T git@github.com)",
+      "Bash(ssh-keygen -t ed25519 -C \"jkjk0600@gmail.com\" -f ~/.ssh/id_ed25519 -N \"\")",
+      "Bash(npx create-next-app@latest apps/web --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest /Users/a451776/project/to-do/apps/web --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(python3)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in d.items\\(\\) if k in ['dependencies','devDependencies','scripts']}, indent=2\\)\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

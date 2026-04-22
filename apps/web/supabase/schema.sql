@@ -77,7 +77,12 @@ create table if not exists suggestion_todos (
   suggestion_id              uuid not null references ai_suggestions(id) on delete cascade,
   generated_todo_title       text not null,
   generated_todo_description text,
-  approved_yn                boolean not null default false
+  approved_yn                boolean not null default false,
+  reluctance_score           integer not null default 5 check (reluctance_score between 0 and 10),
+  importance                 integer not null default 3 check (importance between 1 and 5),
+  estimated_minutes          integer,
+  schedule_impact            text,
+  urgency_hint               text check (urgency_hint in ('today', 'this_week', 'later'))
 );
 
 -- updated_at auto-update trigger

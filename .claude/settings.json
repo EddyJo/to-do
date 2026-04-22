@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(pnpm:*)",
+      "Bash(node:*)",
+      "Bash(bash scripts/agent-validate.sh:*)",
+      "Bash(bash scripts/agent-open-pr.sh:*)",
+      "Bash(bash scripts/quality-report.sh:*)",
+      "Bash(bash scripts/entropy-scan.sh:*)",
+      "Read(**/*)",
+      "Write(apps/**/*)",
+      "Write(packages/**/*)",
+      "Write(services/**/*)",
+      "Write(docs/**/*)",
+      "Write(tests/**/*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(rm -rf:*)",
+      "Bash(DROP TABLE:*)",
+      "Bash(curl * | bash:*)",
+      "Write(.env*)",
+      "Write(.github/workflows/*)",
+      "Write(AGENTS.md)",
+      "Write(lint/eslint/custom-rules/*)"
+    ]
+  }
+}

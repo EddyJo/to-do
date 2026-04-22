@@ -4,6 +4,7 @@ export type TodoSource = 'manual' | 'ai-extracted' | 'memo'
 export type NoteType = 'meeting' | 'idea' | 'memo'
 export type SuggestionStatus = 'pending' | 'approved' | 'rejected' | 'deferred'
 export type SuggestionType = 'action_item' | 'todo' | 'follow_up' | 'decision'
+export type UrgencyHint = 'today' | 'this_week' | 'later'
 
 export interface Task {
   id: string
@@ -24,9 +25,9 @@ export interface Todo {
   title: string
   description: string | null
   status: TodoStatus
-  importance: number        // 1-5
-  reluctance_score: number  // 0-10, 높을수록 하기 싫음
-  avoidance_score: number   // 복합 우선순위 점수 (자동 계산)
+  importance: number
+  reluctance_score: number
+  avoidance_score: number
   estimated_minutes: number | null
   due_date: string | null
   source: TodoSource
@@ -40,7 +41,7 @@ export interface Note {
   id: string
   task_id: string | null
   note_type: NoteType
-  raw_content: string       // 원문 항상 보관
+  raw_content: string
   created_at: string
   task?: Task
   ai_summary?: AISummary
@@ -75,6 +76,11 @@ export interface SuggestionTodo {
   generated_todo_title: string
   generated_todo_description: string | null
   approved_yn: boolean
+  reluctance_score: number
+  importance: number
+  estimated_minutes: number | null
+  schedule_impact: string | null
+  urgency_hint: UrgencyHint | null
 }
 
 export interface CreateTaskInput {
@@ -92,6 +98,7 @@ export interface CreateTodoInput {
   reluctance_score?: number
   estimated_minutes?: number
   due_date?: string
+  source?: TodoSource
 }
 
 export interface CreateNoteInput {
