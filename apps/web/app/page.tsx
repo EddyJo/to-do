@@ -5,6 +5,7 @@ import { getTodos, updateTodo, snoozeTodo } from '@/lib/db/todos'
 import { TodoCard } from '@/components/TodoCard'
 import { DailyQuote } from '@/components/DailyQuote'
 import { MorningRetro } from '@/components/MorningRetro'
+import { Toast, useToast } from '@/components/ui/Toast'
 import type { Todo } from '@/types'
 
 const TODAY_COUNT = 5
@@ -14,6 +15,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [prioritizing, setPrioritizing] = useState(false)
   const [lastPrioritized, setLastPrioritized] = useState<string | null>(null)
+  const { toast, showToast, dismissToast } = useToast()
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -33,9 +35,27 @@ export default function HomePage() {
     } finally { setPrioritizing(false) }
   }
 
-  async function handleStart(id: string)  { await updateTodo(id, { status: 'in_progress' }); load() }
-  async function handleDone(id: string)   { await updateTodo(id, { status: 'done' }); load() }
-  async function handleSnooze(id: string) { await snoozeTodo(id); load() }
+  async function handleStart(id: string) {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, status: 'in_progress' as const } : t))
+    try { await updateTodo(id, { status: 'in_progress' }) }
+    catch { load() }
+  }
+
+  async function handleDone(id: string) {
+    setTodos(prev => prev.filter(t => t.id !== id))
+    try {
+      await updateTodo(id, { status: 'done' })
+      showToast('잘 해냈어요 ✓')
+    } catch { load() }
+  }
+
+  async function handleSnooze(id: string) {
+    setTodos(prev => prev.filter(t => t.id !== id))
+    try {
+      await snoozeTodo(id)
+      showToast('미뤘어요. 나중에 다시 볼게요')
+    } catch { load() }
+  }
 
   const todayList = todos.slice(0, TODAY_COUNT)
   const backlog   = todos.slice(TODAY_COUNT)
@@ -43,7 +63,6 @@ export default function HomePage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '3px' }}>오늘 마주할 것들</h1>
@@ -55,7 +74,7 @@ export default function HomePage() {
           )}
           <button
             onClick={handlePrioritize} disabled={prioritizing}
-            style={{ fontSize: '12px', padding: '5px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#6e6e6e', cursor: 'pointer', opacity: prioritizing ? 0.4 : 1 }}
+            style={{ fontSize: '12px', padding: '5px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#6e6e6e', cursor: 'pointer', opacity: prioritizing ? 0.4 : 1, transition: 'opacity 0.15s' }}
           >
             {prioritizing ? '정렬 중…' : '다시 정렬'}
           </button>
@@ -66,10 +85,8 @@ export default function HomePage() {
       </div>
 
       <MorningRetro />
-
       <DailyQuote />
 
-      {/* Content */}
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {[...Array(3)].map((_, i) => (
@@ -116,6 +133,8 @@ export default function HomePage() {
           )}
         </>
       )}
+
+      {toast && <Toast message={toast} onDismiss={dismissToast} />}
     </div>
   )
 }

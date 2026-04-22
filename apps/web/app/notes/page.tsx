@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import type { Note, NoteType } from '@/types'
+import { Button } from '@/components/ui/Button'
 
 const TYPE_LABELS: Record<NoteType | 'all', string> = {
   all: '전체',
@@ -20,11 +21,19 @@ const TYPE_COLORS: Record<NoteType, string> = {
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<NoteType | 'all'>('all')
 
-  useEffect(() => {
-    fetch('/api/notes')
-      .then(r => r.json())
+  function load() {
+    setLoading(true)
+    setError(null)
+    const controller = new AbortController()
+
+    fetch('/api/notes', { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error('fetch failed')
+        return r.json()
+      })
       .then(data => {
         const notes = Array.isArray(data) ? data : []
         notes.forEach(n => {
@@ -33,7 +42,16 @@ export default function NotesPage() {
         setNotes(notes)
         setLoading(false)
       })
-  }, [])
+      .catch(err => {
+        if (err.name === 'AbortError') return
+        setError('기록을 불러오지 못했어요')
+        setLoading(false)
+      })
+
+    return () => controller.abort()
+  }
+
+  useEffect(load, [])
 
   const filtered = filter === 'all' ? notes : notes.filter(n => n.note_type === filter)
 
@@ -67,6 +85,11 @@ export default function NotesPage() {
           {[...Array(3)].map((_, i) => (
             <div key={i} style={{ height: '80px', background: '#161616', borderRadius: '6px', opacity: 0.5 }} />
           ))}
+        </div>
+      ) : error ? (
+        <div style={{ padding: '40px 24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '13px', color: '#f87171', marginBottom: '14px' }}>{error}</p>
+          <Button variant="ghost" size="sm" onClick={load}>다시 시도</Button>
         </div>
       ) : filtered.length === 0 ? (
         <div style={{ padding: '52px 24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px' }}>

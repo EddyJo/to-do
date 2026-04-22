@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
+import { Button } from '@/components/ui/Button'
 import type { Note, NoteType, SuggestionStatus } from '@/types'
 
 const TYPE_LABELS: Record<NoteType, string> = {
@@ -35,23 +36,31 @@ export default function NoteDetailPage() {
   const router = useRouter()
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/notes/${id}`)
-      .then(r => r.ok ? r.json() : null)
+    const controller = new AbortController()
+    fetch(`/api/notes/${id}`, { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error('not found')
+        return r.json()
+      })
       .then(data => {
-        if (data) {
-          // Supabase returns one-to-many as array; normalize to single object
-          if (Array.isArray(data.ai_summary)) data.ai_summary = data.ai_summary[0] ?? null
-        }
+        if (Array.isArray(data.ai_summary)) data.ai_summary = data.ai_summary[0] ?? null
         setNote(data)
         setLoading(false)
       })
+      .catch(err => {
+        if (err.name === 'AbortError') return
+        setError('노트를 불러오지 못했어요')
+        setLoading(false)
+      })
+    return () => controller.abort()
   }, [id])
 
   async function handleDelete() {
-    if (!confirm('이 기록을 삭제할까요?')) return
     setDeleting(true)
     await fetch(`/api/notes/${id}`, { method: 'DELETE' })
     router.replace('/notes')
@@ -65,9 +74,12 @@ export default function NoteDetailPage() {
     </div>
   )
 
-  if (!note) return (
+  if (error || !note) return (
     <div style={{ padding: '52px 24px', textAlign: 'center' }}>
-      <p style={{ color: '#6e6e6e', fontSize: '14px' }}>노트를 찾을 수 없어요</p>
+      <p style={{ color: '#f87171', fontSize: '13px', marginBottom: '14px' }}>
+        {error ?? '노트를 찾을 수 없어요'}
+      </p>
+      <Button variant="ghost" size="sm" onClick={() => router.back()}>← 뒤로</Button>
     </div>
   )
 
@@ -81,14 +93,21 @@ export default function NoteDetailPage() {
           >
             ← 뒤로
           </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            style={{ fontSize: '12px', color: '#6e6e6e', background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', opacity: deleting ? 0.4 : 1 }}
-          >
-            {deleting ? '삭제 중…' : '삭제'}
-          </button>
+
+          {/* 인라인 삭제 확인 */}
+          {confirmDelete ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '12px', color: '#9a9a9a' }}>정말 삭제할까요?</span>
+              <Button variant="danger" size="sm" onClick={handleDelete} disabled={deleting}>
+                {deleting ? '삭제 중…' : '삭제'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>취소</Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(true)}>삭제</Button>
+          )}
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{
             fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em',
