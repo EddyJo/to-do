@@ -39,10 +39,11 @@ PRs: always target `main` branch at `github.com/EddyJo/to-do`
 2. **Plans before code** — for anything beyond a trivial edit, create or update an execution plan in `docs/exec-plans/`.
 3. **Small diffs over broad rewrites** — prefer the smallest correct change. Avoid opportunistic refactors.
 4. **Docs and code must stay aligned** — if behavior, architecture, API shape, or validation rules change, update the relevant docs in the same PR.
-5. **Validation is mandatory** — every meaningful change must pass all relevant checks before declaring done.
-6. **Observability is part of the implementation** — new or changed behavior must be diagnosable through logs, metrics, or traces.
-7. **Respect architectural boundaries** — do not introduce shortcuts that violate layering, ownership, or security rules.
-8. **Do not guess when the repository already contains the answer** — search codebase and docs first.
+5. **Tests before code (TDD)** — write a failing test that defines the expected behavior BEFORE writing implementation. Run it locally to confirm it fails, then implement, then confirm it passes.
+6. **Validation is mandatory** — every meaningful change must pass all relevant checks before declaring done.
+7. **Observability is part of the implementation** — new or changed behavior must be diagnosable through logs, metrics, or traces.
+8. **Respect architectural boundaries** — do not introduce shortcuts that violate layering, ownership, or security rules.
+9. **Do not guess when the repository already contains the answer** — search codebase and docs first.
 
 ---
 
@@ -80,25 +81,44 @@ Summarize the task internally before acting.
 
 Execution plans: `docs/exec-plans/<task-name>.md` using `docs/exec-plans/template.md`
 
-### Step 3 — Implement
+### Step 3 — Write Tests First (mandatory)
+
+**Before writing any implementation code:**
+
+```bash
+# 1. Write a failing test that defines expected behavior
+#    Location: apps/web/__tests__/<layer>/<file>.test.ts
+#
+# 2. Run it — must be RED (failing)
+cd apps/web && npm test
+#
+# 3. Implement the minimum code to make it pass
+#
+# 4. Run again — must be GREEN (passing)
+npm test
+#
+# 5. Refactor if needed — tests must stay green
+```
+
+Test file locations:
+- Logic / utils → `__tests__/lib/<file>.test.ts`
+- Components → `__tests__/components/<Component>.test.tsx`
+- DB layer (mocked) → `__tests__/lib/db/<file>.test.ts`
+
+**No PR without tests. No exceptions.**
+
+### Step 4 — Implement
 
 ```
 [Feature / Bug fix]
-  └─ read relevant docs/ first
+  └─ tests already written and failing (Step 3 done)
   └─ routes/ → services/ → repositories/ (단방향만, no skipping layers)
   └─ logger.info/warn/error only (console.* blocked by ESLint)
   └─ no sensitive data in logs (password/token/secret/apiKey)
-  └─ no prisma import in routes/ (blocked by ESLint)
-  └─ add or update tests near changed behavior
   └─ add observability hooks where behavior changes
-
-[Bug fix specifically]
-  └─ write failing test first (TDD)
-  └─ 1~3 files, minimum change
-  └─ check docs/OBSERVABILITY.md for log/trace queries first
 ```
 
-### Step 4 — Validate
+### Step 5 — Validate
 
 ```bash
 bash scripts/agent-validate.sh
@@ -110,11 +130,11 @@ Validation order: lint → typecheck → unit tests → integration tests → st
 
 If a check fails: diagnose root cause → fix → rerun. Do not ignore failures without explicit justification.
 
-### Step 5 — Update docs
+### Step 6 — Update docs
 
 Must update in the same PR when applicable — see "When To Update Which Doc" table below.
 
-### Step 6 — Prepare PR
+### Step 7 — Prepare PR
 
 ```bash
 bash scripts/agent-open-pr.sh "feat|fix|chore|docs|refactor|test: description"
@@ -199,6 +219,52 @@ Preserve dependency direction. Do not bypass layers as a shortcut.
 | new env variable | `.env.example` |
 | non-trivial implementation | `docs/exec-plans/` |
 | exec-plan completed | `docs/exec-plans/index.md` status update |
+
+---
+
+## Local Testing Commands
+
+Run these locally before every PR:
+
+```bash
+cd apps/web
+
+# Run all tests once
+npm test
+
+# Watch mode (during development)
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+# → must show lines ≥ 80%
+```
+
+### What to test for each change type
+
+| Change | Required test |
+|--------|--------------|
+| New util / pure function | Unit test in `__tests__/lib/` |
+| New component | Render test + interaction in `__tests__/components/` |
+| New DB query | Mock Supabase, test query shape and error paths |
+| Bug fix | Failing test → fix → passing test |
+| avoidance_score logic | Always unit tested (core domain) |
+| AI suggestion approval flow | Integration test with mocked Supabase |
+
+### Mock pattern for Supabase
+
+```typescript
+import { vi } from 'vitest'
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: mockTodo, error: null }),
+    })),
+  },
+}))
+```
 
 ---
 
@@ -311,7 +377,8 @@ Choose boring, maintainable solutions over clever ones.
 A task is done only when **all** applicable items are true:
 
 - [ ] implementation complete
-- [ ] relevant tests pass
+- [ ] failing test written BEFORE implementation (TDD)
+- [ ] relevant tests pass locally (`npm test` green)
 - [ ] lint / typecheck / structural checks pass
 - [ ] docs updated in the same PR
 - [ ] observability sufficient (logs, metrics, traces)

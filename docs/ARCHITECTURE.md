@@ -113,3 +113,76 @@ packages/utils → (외부 패키지만)
 - 인증/인가 방식 변경
 - AI 모델 공급자 변경
 - 새로운 결제/이메일 외부 서비스 통합
+
+---
+
+## 테스트 구조
+
+### 테스트 도구
+
+| 도구 | 용도 |
+|------|------|
+| Vitest | 테스트 러너 (Next.js와 호환, 빠른 실행) |
+| @testing-library/react | 컴포넌트 렌더링/인터랙션 테스트 |
+| @testing-library/jest-dom | DOM matcher (`toBeInTheDocument` 등) |
+| jsdom | 브라우저 환경 시뮬레이션 |
+
+### 테스트 파일 위치
+
+```
+apps/web/
+└── __tests__/
+    ├── lib/
+    │   ├── utils.test.ts          # 순수 함수 (reluctanceColor, statusLabel 등)
+    │   ├── avoidance.test.ts      # avoidance_score 계산 로직
+    │   └── db/
+    │       ├── todos.test.ts      # DB 쿼리 (Supabase mocked)
+    │       ├── tasks.test.ts
+    │       └── suggestions.test.ts
+    └── components/
+        ├── TodoCard.test.tsx      # 렌더링 + 인터랙션
+        ├── AISuggestionCard.test.tsx
+        └── NoteEditor.test.tsx
+```
+
+### TDD 흐름 (필수)
+
+```
+1. 실패하는 테스트 작성 → npm test (RED 확인)
+2. 최소 구현 코드 작성 → npm test (GREEN 확인)
+3. 리팩터링 → npm test (GREEN 유지)
+4. scripts/agent-validate.sh 실행
+```
+
+### 커버리지 기준
+
+- Lines: ≥ 80%
+- Functions: ≥ 80%
+- Branches: ≥ 70%
+
+측정 명령: `cd apps/web && npm run test:coverage`
+
+### Supabase 모킹 패턴
+
+```typescript
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: mockData, error: null }),
+    })),
+  },
+}))
+```
+
+### 외부 의존성 (테스트용 추가)
+
+| 패키지 | 목적 | 버전 | 추가일 |
+|--------|------|------|--------|
+| vitest | 테스트 러너 | 4.x | 2026-04-22 |
+| @testing-library/react | 컴포넌트 테스트 | 16.x | 2026-04-22 |
+| @testing-library/jest-dom | DOM matchers | 6.x | 2026-04-22 |
+| jsdom | 브라우저 환경 | 26.x | 2026-04-22 |
+
