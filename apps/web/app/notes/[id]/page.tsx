@@ -40,7 +40,14 @@ export default function NoteDetailPage() {
   useEffect(() => {
     fetch(`/api/notes/${id}`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => { setNote(data); setLoading(false) })
+      .then(data => {
+        if (data) {
+          // Supabase returns one-to-many as array; normalize to single object
+          if (Array.isArray(data.ai_summary)) data.ai_summary = data.ai_summary[0] ?? null
+        }
+        setNote(data)
+        setLoading(false)
+      })
   }, [id])
 
   async function handleDelete() {
