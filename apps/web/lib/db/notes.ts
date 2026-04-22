@@ -33,3 +33,8 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
   if (error) throw error
   return data
 }
+
+export async function deleteNote(id: string): Promise<void> {
+  const { error } = await supabase.from('notes').delete().eq('id', id)
+  if (error) throw error
+}
