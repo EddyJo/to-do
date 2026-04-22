@@ -1,5 +1,5 @@
-// User instruction: "ai통해 action item 뽑고 내가 하기 싫어할것 같은 일과 시급도, 중요도, 업무 일정 영향 등을 바탕으로 todo뽑아서 제안해주는거야"
-import Anthropic from '@anthropic-ai/sdk'
+// User instruction: "gemini로 바꿔줘"
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { supabase } from '@/lib/supabase/client'
 import type { Note, AISummary, AISuggestion } from '@/types'
 
@@ -52,7 +52,8 @@ ${rawContent}`
 
 export function parseAIResponse(raw: string): ExtractedItem[] {
   try {
-    const parsed = JSON.parse(raw)
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const parsed = JSON.parse(cleaned)
     if (!Array.isArray(parsed?.items)) return []
     return parsed.items.map((item: Partial<ExtractedItem>) => ({
       title: String(item.title ?? ''),
@@ -70,19 +71,16 @@ export function parseAIResponse(raw: string): ExtractedItem[] {
   }
 }
 
-let _client: Anthropic | null = null
-function getClient(): Anthropic {
-  if (!_client) _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+let _client: GoogleGenerativeAI | null = null
+function getClient(): GoogleGenerativeAI {
+  if (!_client) _client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
   return _client
 }
 
 export async function extractActionItems(rawContent: string): Promise<ExtractedItem[]> {
-  const message = await getClient().messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: buildExtractionPrompt(rawContent) }],
-  })
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const model = getClient().getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const result = await model.generateContent(buildExtractionPrompt(rawContent))
+  const text = result.response.text()
   return parseAIResponse(text)
 }
 
