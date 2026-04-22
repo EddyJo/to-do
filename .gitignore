@@ -1,0 +1,8 @@
+node_modules/
+apps/web/.next/
+apps/web/out/
+.env*.local
+.DS_Store
+reports/quality/
+reports/eval/
+*.log

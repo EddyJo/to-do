@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Design System — colors_and_type.css (adapted)
+   ============================================================ */
+:root {
+  --color-neon-volt: #faff69;
+  --color-neon-volt-pale: #f4f692;
+  --color-forest-green: #166534;
+  --color-dark-forest: #14572f;
+  --color-border-olive: #4f5100;
+  --color-olive-dark: #161600;
+  --color-black: #000000;
+  --color-near-black: #141414;
+  --color-charcoal: #414141;
+  --color-deep-charcoal: #343434;
+  --color-hover-gray: #3a3a3a;
+  --color-pressed-dark: #1d1d1d;
+  --color-white: #ffffff;
+  --color-silver: #a0a0a0;
+  --color-mid-gray: rgba(88,88,88,0.28);
+
+  --bg-page: var(--color-black);
+  --bg-surface: var(--color-near-black);
+  --bg-surface-hover: var(--color-hover-gray);
+  --bg-neon-cta: var(--color-neon-volt);
+  --bg-green-cta: var(--color-forest-green);
+
+  --fg-primary: var(--color-white);
+  --fg-secondary: var(--color-silver);
+  --fg-active: var(--color-neon-volt-pale);
+  --fg-on-neon: #151515;
+  --fg-link-hover: var(--color-neon-volt);
+
+  --border-card: rgba(65,65,65,0.8);
+  --border-card-featured: var(--color-neon-volt);
+  --border-divider: var(--color-deep-charcoal);
+  --border-ghost-btn: var(--color-border-olive);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Inconsolata', 'Courier New', monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-4xl: 2.25rem;
+
+  --space-3: 8px;
+  --space-5: 12px;
+  --space-6: 16px;
+  --space-7: 20px;
+  --space-8: 24px;
+  --space-9: 32px;
+  --space-10: 40px;
+  --space-12: 64px;
+
+  --radius-sharp: 4px;
+  --radius-comfortable: 8px;
+  --radius-pill: 9999px;
+
+  --shadow-1: rgba(0,0,0,0.1) 0px 1px 3px, rgba(0,0,0,0.1) 0px 1px 2px -1px;
+  --shadow-2: rgba(0,0,0,0.1) 0px 10px 15px -3px, rgba(0,0,0,0.1) 0px 4px 6px -4px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg-page);
+  color: var(--fg-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--fg-primary); text-decoration: none; transition: color 0.15s ease; }
+a:hover { color: var(--fg-link-hover); }
+
+.card {
+  background: transparent;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-comfortable);
+}
+.card--surface { background: var(--bg-surface); }
+.card--neon { border-color: var(--color-neon-volt); }
+
+/* Reluctance score color scale */
+.reluctance-low    { color: var(--color-silver); }
+.reluctance-mid    { color: #f59e0b; }
+.reluctance-high   { color: #ef4444; }
+.reluctance-max    { color: var(--color-neon-volt); }

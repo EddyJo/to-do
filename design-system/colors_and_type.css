@@ -1,0 +1,318 @@
+/* ============================================================
+   ClickHouse Design System — colors_and_type.css
+   ============================================================ */
+
+/* Inter — local variable font (brand upload) */
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-VariableFont_opsz_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inconsolata — still loaded from Google Fonts (no brand file provided) */
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&display=swap');
+
+/* NOTE: "Basier" is a commercial font not available on Google Fonts.
+   Arial/Helvetica is used as the fallback per the original spec.
+   Replace with actual Basier font files in fonts/ if available. */
+
+/* ============================================================
+   BASE COLOR TOKENS
+   ============================================================ */
+:root {
+  /* Brand Accent */
+  --color-neon-volt: #faff69;
+  --color-neon-volt-pale: #f4f692;      /* Active/pressed state */
+  --color-forest-green: #166534;        /* Primary CTA green */
+  --color-dark-forest: #14572f;         /* Darker green border/accent */
+  --color-border-olive: #4f5100;        /* Ghost button border */
+  --color-olive-dark: #161600;          /* Darkest neon-tinted */
+
+  /* Surfaces & Backgrounds */
+  --color-black: #000000;              /* Page background — pure black */
+  --color-near-black: #141414;         /* Button bg, elevated surfaces */
+  --color-charcoal: #414141;           /* Card border base */
+  --color-deep-charcoal: #343434;      /* Subtle dividers */
+  --color-hover-gray: #3a3a3a;         /* Button hover bg */
+  --color-pressed-dark: #1d1d1d;       /* Neon button hover bg */
+
+  /* Neutrals & Text */
+  --color-white: #ffffff;
+  --color-silver: #a0a0a0;             /* Secondary / muted text */
+  --color-mid-gray: rgba(88,88,88,0.28); /* Subtle overlay */
+  --color-border-light: #e5e7eb;       /* Light border (rare) */
+
+  /* ============================================================
+     SEMANTIC COLOR ROLES
+     ============================================================ */
+
+  /* Backgrounds */
+  --bg-page: var(--color-black);
+  --bg-surface: var(--color-near-black);
+  --bg-surface-hover: var(--color-hover-gray);
+  --bg-neon-cta: var(--color-neon-volt);
+  --bg-green-cta: var(--color-forest-green);
+
+  /* Foreground / Text */
+  --fg-primary: var(--color-white);
+  --fg-secondary: var(--color-silver);
+  --fg-active: var(--color-neon-volt-pale);
+  --fg-on-neon: #151515;               /* Text on neon yellow-green buttons */
+  --fg-link: var(--color-white);
+  --fg-link-hover: var(--color-neon-volt);
+
+  /* Borders */
+  --border-card: rgba(65, 65, 65, 0.8);
+  --border-card-featured: var(--color-neon-volt);
+  --border-divider: var(--color-deep-charcoal);
+  --border-ghost-btn: var(--color-border-olive);
+  --border-neon-btn: var(--color-neon-volt);
+
+  /* Interactive */
+  --interactive-primary-bg: var(--color-neon-volt);
+  --interactive-primary-text: var(--fg-on-neon);
+  --interactive-primary-hover-bg: var(--color-pressed-dark);
+  --interactive-secondary-bg: var(--color-near-black);
+  --interactive-secondary-text: var(--color-white);
+  --interactive-secondary-hover-bg: var(--color-hover-gray);
+  --interactive-cta-bg: var(--color-forest-green);
+  --interactive-cta-text: var(--color-white);
+
+  /* ============================================================
+     TYPOGRAPHY — FONT FAMILIES
+     ============================================================ */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Basier', Arial, Helvetica, sans-serif;   /* Commercial — fallback only */
+  --font-mono: 'Inconsolata', 'Courier New', Courier, monospace;
+
+  /* ============================================================
+     TYPOGRAPHY — BASE SCALE (px → rem at 16px root)
+     ============================================================ */
+  --text-micro: 0.7rem;       /* 11.2px */
+  --text-xs: 0.75rem;         /* 12px */
+  --text-sm: 0.875rem;        /* 14px */
+  --text-base: 1rem;          /* 16px */
+  --text-lg: 1.125rem;        /* 18px */
+  --text-xl: 1.25rem;         /* 20px */
+  --text-2xl: 1.5rem;         /* 24px */
+  --text-4xl: 2.25rem;        /* 36px */
+  --text-6xl: 4.5rem;         /* 72px */
+  --text-8xl: 6rem;           /* 96px */
+
+  /* ============================================================
+     TYPOGRAPHY — SEMANTIC ROLES
+     ============================================================ */
+
+  /* Display / Hero */
+  --type-display-mega-size: var(--text-8xl);
+  --type-display-mega-weight: 900;
+  --type-display-mega-line-height: 1.0;
+  --type-display-mega-family: var(--font-sans);
+
+  --type-display-size: var(--text-6xl);
+  --type-display-weight: 700;
+  --type-display-line-height: 1.0;
+  --type-display-family: var(--font-sans);
+
+  /* Headings */
+  --type-h1-size: var(--text-4xl);
+  --type-h1-weight: 600;
+  --type-h1-line-height: 1.3;
+  --type-h1-family: var(--font-display);
+
+  --type-h2-size: var(--text-2xl);
+  --type-h2-weight: 700;
+  --type-h2-line-height: 1.17;
+  --type-h2-family: var(--font-sans);
+
+  --type-h3-size: var(--text-xl);
+  --type-h3-weight: 600;
+  --type-h3-line-height: 1.4;
+  --type-h3-family: var(--font-sans);
+
+  /* Body */
+  --type-body-lg-size: var(--text-lg);
+  --type-body-lg-weight: 400;
+  --type-body-lg-line-height: 1.56;
+
+  --type-body-size: var(--text-base);
+  --type-body-weight: 400;
+  --type-body-line-height: 1.5;
+
+  --type-caption-size: var(--text-sm);
+  --type-caption-weight: 400;
+  --type-caption-line-height: 1.43;
+
+  /* Labels */
+  --type-label-size: var(--text-sm);
+  --type-label-weight: 600;
+  --type-label-letter-spacing: 1.4px;
+  --type-label-transform: uppercase;
+
+  /* Code */
+  --type-code-size: var(--text-base);
+  --type-code-weight: 600;
+  --type-code-line-height: 1.5;
+  --type-code-family: var(--font-mono);
+
+  /* Small / Micro */
+  --type-small-size: var(--text-xs);
+  --type-small-weight: 500;
+  --type-small-line-height: 1.33;
+
+  --type-micro-size: var(--text-micro);
+  --type-micro-weight: 500;
+  --type-micro-line-height: 1.79;
+
+  /* ============================================================
+     SPACING SCALE (base unit: 8px)
+     ============================================================ */
+  --space-0: 0px;
+  --space-1: 2px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 16px;
+  --space-7: 20px;
+  --space-8: 24px;
+  --space-9: 32px;
+  --space-10: 40px;
+  --space-11: 48px;
+  --space-12: 64px;
+
+  /* ============================================================
+     BORDER RADIUS SCALE
+     ============================================================ */
+  --radius-sharp: 4px;
+  --radius-comfortable: 8px;
+  --radius-pill: 9999px;
+
+  /* ============================================================
+     SHADOW / ELEVATION SYSTEM
+     ============================================================ */
+  --shadow-1: rgba(0,0,0,0.1) 0px 1px 3px, rgba(0,0,0,0.1) 0px 1px 2px -1px;
+  --shadow-2: rgba(0,0,0,0.1) 0px 10px 15px -3px, rgba(0,0,0,0.1) 0px 4px 6px -4px;
+  --shadow-inset: rgba(0,0,0,0.06) 0px 4px 4px, rgba(0,0,0,0.14) 0px 4px 25px inset;
+
+  /* ============================================================
+     BUTTON PADDING
+     ============================================================ */
+  --btn-padding-standard: 12px 16px;
+  --btn-padding-compact: 0px 16px;
+  --btn-padding-wide: 0px 32px;
+}
+
+/* ============================================================
+   BASE ELEMENT STYLES
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg-page);
+  color: var(--fg-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--fg-link);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+a:hover { color: var(--fg-link-hover); }
+
+/* Semantic heading classes */
+.display-mega {
+  font-family: var(--type-display-mega-family);
+  font-size: var(--type-display-mega-size);
+  font-weight: var(--type-display-mega-weight);
+  line-height: var(--type-display-mega-line-height);
+}
+.display {
+  font-family: var(--type-display-family);
+  font-size: var(--type-display-size);
+  font-weight: var(--type-display-weight);
+  line-height: var(--type-display-line-height);
+}
+.h1 {
+  font-family: var(--type-h1-family);
+  font-size: var(--type-h1-size);
+  font-weight: var(--type-h1-weight);
+  line-height: var(--type-h1-line-height);
+}
+.h2 {
+  font-family: var(--type-h2-family);
+  font-size: var(--type-h2-size);
+  font-weight: var(--type-h2-weight);
+  line-height: var(--type-h2-line-height);
+}
+.h3 {
+  font-family: var(--type-h3-family);
+  font-size: var(--type-h3-size);
+  font-weight: var(--type-h3-weight);
+  line-height: var(--type-h3-line-height);
+}
+.body-lg {
+  font-size: var(--type-body-lg-size);
+  font-weight: var(--type-body-lg-weight);
+  line-height: var(--type-body-lg-line-height);
+}
+.body {
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-line-height);
+}
+.caption {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  line-height: var(--type-caption-line-height);
+  color: var(--fg-secondary);
+}
+.label {
+  font-size: var(--type-label-size);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-letter-spacing);
+  text-transform: var(--type-label-transform);
+}
+code, .code {
+  font-family: var(--type-code-family);
+  font-size: var(--type-code-size);
+  font-weight: var(--type-code-weight);
+  line-height: var(--type-code-line-height);
+}
+.small {
+  font-size: var(--type-small-size);
+  font-weight: var(--type-small-weight);
+  line-height: var(--type-small-line-height);
+}
+.micro {
+  font-size: var(--type-micro-size);
+  font-weight: var(--type-micro-weight);
+  line-height: var(--type-micro-line-height);
+}
+
+/* Color utilities */
+.text-primary { color: var(--fg-primary); }
+.text-secondary { color: var(--fg-secondary); }
+.text-neon { color: var(--color-neon-volt); }
+.text-active { color: var(--fg-active); }
+
+/* Card base */
+.card {
+  background: transparent;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-comfortable);
+}
+.card--featured {
+  border-color: var(--color-neon-volt);
+}
+.card--surface {
+  background: var(--bg-surface);
+}
