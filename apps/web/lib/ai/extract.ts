@@ -77,11 +77,33 @@ function getClient(): GoogleGenerativeAI {
   return _client
 }
 
+function parseRetryDelayMs(err: unknown): number | null {
+  try {
+    const details = (err as any)?.errorDetails
+    if (!Array.isArray(details)) return null
+    const info = details.find((d: any) => d['@type']?.includes('RetryInfo'))
+    if (info?.retryDelay) return parseInt(info.retryDelay) * 1000
+  } catch {}
+  return null
+}
+
 export async function extractActionItems(rawContent: string): Promise<ExtractedItem[]> {
   const model = getClient().getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
-  const result = await model.generateContent(buildExtractionPrompt(rawContent))
-  const text = result.response.text()
-  return parseAIResponse(text)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const result = await model.generateContent(buildExtractionPrompt(rawContent))
+      return parseAIResponse(result.response.text())
+    } catch (err: unknown) {
+      const is429 = (err as any)?.status === 429
+      if (is429 && attempt < 2) {
+        const delay = parseRetryDelayMs(err) ?? 2 ** attempt * 2000
+        await new Promise(r => setTimeout(r, delay))
+        continue
+      }
+      throw err
+    }
+  }
+  return []
 }
 
 export async function extractFromNote(note: Note): Promise<AIExtractionResult> {

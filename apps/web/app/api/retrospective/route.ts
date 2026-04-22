@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { buildRetroPrompt, parseRetroResponse } from '@/lib/retro/utils'
-import { supabase } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 
 function getClient() {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
 }
 
 async function getYesterdayTodos() {
+  const supabase = createServerClient()
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   yesterday.setHours(0, 0, 0, 0)
@@ -46,7 +47,7 @@ export async function POST() {
     // DB 없어도 작동: 데이터 없으면 "아무것도 안 함"으로 처리
     const prompt = buildRetroPrompt(completed, pending)
 
-    const model = getClient().getGenerativeModel({ model: 'gemini-1.5-flash-8b' })
+    const model = getClient().getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
     const result = await model.generateContent(prompt)
     const text = result.response.text()
     const retro = parseRetroResponse(text)

@@ -4,8 +4,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { Task, Todo, CreateTodoInput } from '@/types'
 import { getTask } from '@/lib/db/tasks'
 import { createTodo, updateTodo, snoozeTodo } from '@/lib/db/todos'
-import { createNote } from '@/lib/db/notes'
-import { extractFromNote } from '@/lib/ai/extract'
 import { TodoCard } from '@/components/TodoCard'
 import { NoteEditor } from '@/components/NoteEditor'
 import { Button } from '@/components/ui/Button'
@@ -45,8 +43,11 @@ export default function TaskDetailPage() {
 
   async function handleNoteSubmit(content: string, type: NoteType) {
     setSavingNote(true)
-    const note = await createNote({ task_id: id, note_type: type, raw_content: content })
-    await extractFromNote(note)
+    await fetch('/api/capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, note_type: type, task_id: id }),
+    })
     setSavingNote(false)
     load()
   }
