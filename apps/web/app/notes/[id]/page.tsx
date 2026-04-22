@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getNote } from '@/lib/db/notes'
 import { formatDate } from '@/lib/utils'
 import type { Note, NoteType, SuggestionStatus } from '@/types'
 
@@ -38,7 +37,9 @@ export default function NoteDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getNote(id).then(data => { setNote(data); setLoading(false) })
+    fetch(`/api/notes/${id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { setNote(data); setLoading(false) })
   }, [id])
 
   if (loading) return (
