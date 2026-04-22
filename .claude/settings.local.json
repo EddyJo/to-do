@@ -15,7 +15,9 @@
       "Bash(npx tsc *)",
       "Bash(npm uninstall *)",
       "Bash(curl -s http://localhost:3000)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python3 -)",
+      "Bash(./node_modules/.bin/tsc --noEmit)"
     ]
   }
 }
