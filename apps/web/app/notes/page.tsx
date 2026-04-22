@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { getNotes } from '@/lib/db/notes'
 import { formatDate } from '@/lib/utils'
 import type { Note, NoteType } from '@/types'
 
@@ -24,7 +23,9 @@ export default function NotesPage() {
   const [filter, setFilter] = useState<NoteType | 'all'>('all')
 
   useEffect(() => {
-    getNotes().then(data => { setNotes(data); setLoading(false) })
+    fetch('/api/notes')
+      .then(r => r.json())
+      .then(data => { setNotes(Array.isArray(data) ? data : []); setLoading(false) })
   }, [])
 
   const filtered = filter === 'all' ? notes : notes.filter(n => n.note_type === filter)
