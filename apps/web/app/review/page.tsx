@@ -22,52 +22,47 @@ export default function ReviewPage() {
     await approveSuggestion(s)
     setSuggestions(p => p.filter(x => x.id !== s.id))
   }
-
   async function handleReject(id: string) {
     await updateSuggestionStatus(id, 'rejected')
     setSuggestions(p => p.filter(x => x.id !== id))
   }
-
   async function handleDefer(id: string) {
     await updateSuggestionStatus(id, 'deferred')
     setSuggestions(p => p.filter(x => x.id !== id))
   }
-
   async function handleRejectAll() {
     await Promise.all(suggestions.map(s => updateSuggestionStatus(s.id, 'rejected')))
     setSuggestions([])
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div>
-          <h1 className="text-2xl font-bold text-white">Review Queue</h1>
-          <p className="text-sm text-[#a0a0a0] mt-1">AI가 추출한 항목을 검토하고 승인하세요</p>
+          <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '3px' }}>AI가 꺼낸 것들</h1>
+          <p style={{ fontSize: '12px', color: '#6e6e6e' }}>맞는 것만 골라서 등록하면 돼요</p>
         </div>
         {suggestions.length > 0 && (
-          <Button variant="danger" size="sm" onClick={handleRejectAll}>전체 삭제</Button>
+          <Button variant="ghost" size="sm" onClick={handleRejectAll}>전부 넘기기</Button>
         )}
       </div>
 
       {loading ? (
-        <div className="text-[#a0a0a0] text-sm animate-pulse">불러오는 중...</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} style={{ height: '80px', background: '#161616', borderRadius: '6px', opacity: 0.5 }} />
+          ))}
+        </div>
       ) : suggestions.length === 0 ? (
-        <div className="card card--surface p-12 text-center">
-          <p className="text-4xl mb-4">✓</p>
-          <p className="text-white font-semibold mb-1">모두 처리했습니다</p>
-          <p className="text-sm text-[#a0a0a0]">새로운 AI 제안이 생기면 여기에 나타납니다</p>
+        <div style={{ padding: '52px 24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '20px', marginBottom: '10px' }}>✦</p>
+          <p style={{ fontSize: '14px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>다 확인했어요</p>
+          <p style={{ fontSize: '12px', color: '#6e6e6e', lineHeight: 1.7 }}>새로 기록하면 AI가 또 꺼내드릴게요</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {suggestions.map(s => (
-            <AISuggestionCard
-              key={s.id}
-              suggestion={s}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onDefer={handleDefer}
-            />
+            <AISuggestionCard key={s.id} suggestion={s} onApprove={handleApprove} onReject={handleReject} onDefer={handleDefer} />
           ))}
         </div>
       )}

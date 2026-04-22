@@ -46,7 +46,7 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', flexWrap: 'wrap' }}>
             {featured && (
               <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--color-neon-volt)', textTransform: 'uppercase' }}>
-                가장 먼저
+                1순위
               </span>
             )}
             {todo.source === 'ai-extracted' && (
@@ -81,7 +81,7 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
             )}
             {todo.snoozed_count > 0 && (
               <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
-                {todo.snoozed_count}회 미룸
+                {todo.snoozed_count}번 넘겼어요
               </span>
             )}
           </div>
@@ -92,7 +92,7 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
         <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-border)' }}>
           {todo.status === 'pending' && onStart && (
             <Button variant="neon" size="sm" onClick={() => onStart(todo.id)}>
-              {featured ? '지금 시작' : '시작'}
+              {featured ? '지금 할게요' : '시작할게요'}
             </Button>
           )}
           {todo.status === 'in_progress' && onDone && (
@@ -108,10 +108,10 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
 }
 
 function reluctanceText(score: number): string {
-  if (score >= 8) return '매우 싫음'
-  if (score >= 6) return '꽤 싫음'
-  if (score >= 4) return '약간 싫음'
-  return '무난함'
+  if (score >= 8) return '정말 하기 싫음'
+  if (score >= 6) return '좀 하기 싫음'
+  if (score >= 4) return '살짝 귀찮음'
+  return '할 만해요'
 }
 
 function reluctanceColorHex(score: number): string {

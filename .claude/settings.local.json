@@ -17,7 +17,8 @@
       "Bash(curl -s http://localhost:3000)",
       "mcp__Claude_Preview__preview_start",
       "Bash(python3 -)",
-      "Bash(./node_modules/.bin/tsc --noEmit)"
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(grep -v \"^.*//.*$\")"
     ]
   }
 }

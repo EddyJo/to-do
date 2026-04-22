@@ -16,12 +16,8 @@ export default function HomePage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    try {
-      const data = await getTodos({ status: 'pending' })
-      setTodos(data)
-    } finally {
-      setLoading(false)
-    }
+    try { const data = await getTodos({ status: 'pending' }); setTodos(data) }
+    finally { setLoading(false) }
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -33,52 +29,37 @@ export default function HomePage() {
       const data = await res.json()
       if (data.todos) setTodos(data.todos)
       setLastPrioritized(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))
-    } finally {
-      setPrioritizing(false)
-    }
+    } finally { setPrioritizing(false) }
   }
 
-  async function handleStart(id: string) { await updateTodo(id, { status: 'in_progress' }); load() }
-  async function handleDone(id: string)  { await updateTodo(id, { status: 'done' }); load() }
-  async function handleSnooze(id: string){ await snoozeTodo(id); load() }
+  async function handleStart(id: string)  { await updateTodo(id, { status: 'in_progress' }); load() }
+  async function handleDone(id: string)   { await updateTodo(id, { status: 'done' }); load() }
+  async function handleSnooze(id: string) { await snoozeTodo(id); load() }
 
   const todayList = todos.slice(0, TODAY_COUNT)
   const backlog   = todos.slice(TODAY_COUNT)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
-      {/* Page header */}
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-white)', marginBottom: '2px' }}>오늘 할 일</h1>
-          <p style={{ fontSize: '12px', color: 'var(--color-gray-400)' }}>회피도 기반 · 가장 미뤄온 것부터</p>
+          <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '3px' }}>오늘 마주할 것들</h1>
+          <p style={{ fontSize: '12px', color: '#6e6e6e' }}>가장 오래 외면해온 것이 맨 위에 있어요</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           {lastPrioritized && (
-            <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>{lastPrioritized}</span>
+            <span style={{ fontSize: '11px', color: '#484848' }}>{lastPrioritized} 정렬됨</span>
           )}
           <button
-            onClick={handlePrioritize}
-            disabled={prioritizing}
-            style={{
-              fontSize: '12px', padding: '5px 10px', borderRadius: '4px',
-              border: '1px solid var(--color-border)', background: 'transparent',
-              color: 'var(--color-gray-400)', cursor: 'pointer', transition: 'all 0.15s',
-              opacity: prioritizing ? 0.4 : 1,
-            }}
+            onClick={handlePrioritize} disabled={prioritizing}
+            style={{ fontSize: '12px', padding: '5px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#6e6e6e', cursor: 'pointer', opacity: prioritizing ? 0.4 : 1 }}
           >
-            {prioritizing ? '계산 중…' : '재계산'}
+            {prioritizing ? '정렬 중…' : '다시 정렬'}
           </button>
-          <Link
-            href="/capture"
-            style={{
-              fontSize: '12px', padding: '5px 12px', borderRadius: '4px',
-              background: 'var(--color-neon-volt)', color: '#111',
-              fontWeight: 600, whiteSpace: 'nowrap',
-            }}
-          >
-            + 새 입력
+          <Link href="/capture" style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '4px', background: '#faff69', color: '#111', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            + 기록
           </Link>
         </div>
       </div>
@@ -89,62 +70,41 @@ export default function HomePage() {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {[...Array(3)].map((_, i) => (
-            <div key={i} style={{ height: '72px', background: 'var(--color-surface)', borderRadius: '6px', opacity: 0.5 }} />
+            <div key={i} style={{ height: '72px', background: '#161616', borderRadius: '6px', opacity: 0.5 }} />
           ))}
         </div>
       ) : todos.length === 0 ? (
-        <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid var(--color-border)', borderRadius: '8px' }}>
-          <div style={{ fontSize: '11px', letterSpacing: '0.1em', color: 'var(--color-gray-500)', textTransform: 'uppercase', marginBottom: '12px' }}>
-            할 일 없음
-          </div>
-          <p style={{ fontSize: '13px', color: 'var(--color-gray-400)', marginBottom: '20px', lineHeight: 1.6 }}>
-            업무 내용이나 메모를 입력하면<br/>AI가 Todo를 추출해드립니다
+        <div style={{ padding: '52px 24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '20px', marginBottom: '10px' }}>☁︎</p>
+          <p style={{ fontSize: '14px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>아직 아무것도 없어요</p>
+          <p style={{ fontSize: '12px', color: '#6e6e6e', marginBottom: '24px', lineHeight: 1.7 }}>
+            오늘 머릿속에 맴도는 것들을 꺼내보세요.<br/>AI가 할 일로 정리해드릴게요.
           </p>
-          <Link
-            href="/capture"
-            style={{
-              display: 'inline-block', fontSize: '13px', padding: '8px 20px',
-              background: 'var(--color-neon-volt)', color: '#111',
-              borderRadius: '4px', fontWeight: 600,
-            }}
-          >
-            입력 시작
+          <Link href="/capture" style={{ display: 'inline-block', fontSize: '13px', padding: '9px 22px', background: '#faff69', color: '#111', borderRadius: '4px', fontWeight: 600 }}>
+            지금 꺼내기
           </Link>
         </div>
       ) : (
         <>
-          {/* Today */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-gray-500)' }}>
-                Today
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--color-gray-600)' }}>{todayList.length}</span>
+              <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6e6e6e' }}>지금 할 것</span>
+              <span style={{ fontSize: '11px', color: '#484848' }}>{todayList.length}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {todayList.map((todo, i) => (
-                <TodoCard
-                  key={todo.id}
-                  todo={todo}
-                  featured={i === 0}
-                  onStart={handleStart}
-                  onDone={handleDone}
-                  onSnooze={handleSnooze}
-                />
+                <TodoCard key={todo.id} todo={todo} featured={i === 0} onStart={handleStart} onDone={handleDone} onSnooze={handleSnooze} />
               ))}
             </div>
           </section>
 
-          {/* Backlog */}
           {backlog.length > 0 && (
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-gray-600)' }}>
-                  Backlog
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--color-gray-600)' }}>{backlog.length}</span>
+                <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#484848' }}>내일 이후</span>
+                <span style={{ fontSize: '11px', color: '#484848' }}>{backlog.length}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.55 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.5 }}>
                 {backlog.map(todo => (
                   <TodoCard key={todo.id} todo={todo} onSnooze={handleSnooze} />
                 ))}
