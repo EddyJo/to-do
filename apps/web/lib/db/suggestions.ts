@@ -1,6 +1,8 @@
-import { supabase } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 import type { AISuggestion, SuggestionStatus, Todo } from '@/types'
 import { createTodo } from '@/lib/db/todos'
+
+const supabase = createServerClient()
 
 export async function getPendingSuggestions(): Promise<AISuggestion[]> {
   const { data, error } = await supabase

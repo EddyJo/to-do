@@ -1,5 +1,7 @@
-import { supabase } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 import type { Note, CreateNoteInput } from '@/types'
+
+const supabase = createServerClient()
 
 export async function getNotes(task_id?: string): Promise<Note[]> {
   let query = supabase

@@ -8,7 +8,9 @@ export function getSupabaseClient(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) throw new Error('Supabase env vars not set. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local')
-  _client = createClient(url, key)
+  // Strip accidental /rest/v1 suffix — the client appends it internally
+  const baseUrl = url.replace(/\/rest\/v1\/?$/, '')
+  _client = createClient(baseUrl, key)
   return _client
 }
 
