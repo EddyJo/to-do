@@ -46,7 +46,7 @@ export async function POST() {
     // DB 없어도 작동: 데이터 없으면 "아무것도 안 함"으로 처리
     const prompt = buildRetroPrompt(completed, pending)
 
-    const model = getClient().getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const model = getClient().getGenerativeModel({ model: 'gemini-1.5-flash-8b' })
     const result = await model.generateContent(prompt)
     const text = result.response.text()
     const retro = parseRetroResponse(text)
