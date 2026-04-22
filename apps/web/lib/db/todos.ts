@@ -1,6 +1,8 @@
 // User instruction: "우선 순위 조정은 매일 아침에만 돌게 해주고, 수동으로 우선순위 조정해서 다시 뽑는 기능은 있어야돼"
-import { supabase } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 import type { Todo, CreateTodoInput } from '@/types'
+
+const supabase = createServerClient()
 
 function calcAvoidanceScore(importance: number, reluctance: number, snoozed = 0) {
   return importance * 2 + reluctance + snoozed * 0.5

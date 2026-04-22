@@ -1,5 +1,7 @@
-import { supabase } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 import type { Task, CreateTaskInput } from '@/types'
+
+const supabase = createServerClient()
 
 export async function getTasks(): Promise<Task[]> {
   const { data, error } = await supabase
