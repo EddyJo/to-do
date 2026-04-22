@@ -32,7 +32,7 @@ export default function CapturePage() {
         body: JSON.stringify({ content, note_type: noteType }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '잠깐 문제가 생겼어요. 다시 시도해볼까요?')
+      if (!res.ok && res.status !== 202) throw new Error(data.error ?? '잠깐 문제가 생겼어요. 다시 시도해볼까요?')
       router.push('/review')
     } catch (err) {
       setError(err instanceof Error ? err.message : '잠깐 문제가 생겼어요. 다시 시도해볼까요?')
@@ -94,7 +94,7 @@ export default function CapturePage() {
           {loading ? (
             <>
               <span style={{ width: '11px', height: '11px', border: '1.5px solid rgba(0,0,0,0.2)', borderTopColor: '#555', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.6s linear infinite' }} />
-              정리하는 중…
+              저장하는 중…
             </>
           ) : '할 일 꺼내기'}
         </button>
