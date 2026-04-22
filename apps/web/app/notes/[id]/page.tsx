@@ -35,12 +35,20 @@ export default function NoteDetailPage() {
   const router = useRouter()
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetch(`/api/notes/${id}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { setNote(data); setLoading(false) })
   }, [id])
+
+  async function handleDelete() {
+    if (!confirm('이 기록을 삭제할까요?')) return
+    setDeleting(true)
+    await fetch(`/api/notes/${id}`, { method: 'DELETE' })
+    router.replace('/notes')
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -59,12 +67,21 @@ export default function NoteDetailPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <button
-          onClick={() => router.back()}
-          style={{ fontSize: '12px', color: '#6e6e6e', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: '12px', display: 'block' }}
-        >
-          ← 뒤로
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <button
+            onClick={() => router.back()}
+            style={{ fontSize: '12px', color: '#6e6e6e', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            ← 뒤로
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            style={{ fontSize: '12px', color: '#6e6e6e', background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', opacity: deleting ? 0.4 : 1 }}
+          >
+            {deleting ? '삭제 중…' : '삭제'}
+          </button>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{
             fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em',

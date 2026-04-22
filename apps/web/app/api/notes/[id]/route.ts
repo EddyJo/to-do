@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getNote } from '@/lib/db/notes'
+import { getNote, deleteNote } from '@/lib/db/notes'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -9,5 +9,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json(note)
   } catch (err) {
     return NextResponse.json({ error: 'Failed to fetch note' }, { status: 500 })
+  }
+}
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    await deleteNote(id)
+    return new NextResponse(null, { status: 204 })
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to delete note' }, { status: 500 })
   }
 }
