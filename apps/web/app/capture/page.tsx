@@ -1,20 +1,18 @@
 'use client'
-// User instruction: "내가 오늘 할일이나 업무 회의록, 업무 내용 등에 대해 이야기하면 해당 내용 바탕으로 todo생성해주는거야"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { NoteType } from '@/types'
 
-const NOTE_TYPES: { value: NoteType; label: string; desc: string }[] = [
-  { value: 'memo',    label: '📝 메모',     desc: '할 일, 생각, 계획' },
-  { value: 'meeting', label: '🗣 회의록',   desc: '회의 내용, 결정사항' },
-  { value: 'idea',    label: '💡 아이디어', desc: '브레인스토밍, 구상' },
+const NOTE_TYPES: { value: NoteType; label: string }[] = [
+  { value: 'memo',    label: '메모' },
+  { value: 'meeting', label: '회의록' },
+  { value: 'idea',    label: '아이디어' },
 ]
 
-const PLACEHOLDER = `예시:
-• 오늘 팀장한테 3분기 보고서 제출해야 하는데 계속 미루고 있음
-• 내일 오전 10시 클라이언트 미팅 전에 제안서 검토 필요
-• 서버 배포 QA 아직 못 했고 이번 주 금요일이 데드라인
-• 신규 입사자 온보딩 자료 만들어야 하는데 언제할지 모르겠음`
+const PLACEHOLDER = `오늘 팀장한테 3분기 보고서 제출해야 하는데 계속 미루고 있음
+내일 오전 10시 클라이언트 미팅 전에 제안서 검토 필요
+서버 배포 QA 아직 못 했고 이번 주 금요일이 데드라인
+신규 입사자 온보딩 자료 만들어야 하는데 언제할지 모르겠음`
 
 export default function CapturePage() {
   const router = useRouter()
@@ -26,8 +24,7 @@ export default function CapturePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!content.trim()) return
-    setLoading(true)
-    setError(null)
+    setLoading(true); setError(null)
     try {
       const res = await fetch('/api/capture', {
         method: 'POST',
@@ -43,88 +40,97 @@ export default function CapturePage() {
     }
   }
 
+  const canSubmit = content.trim().length > 0 && !loading
+
   return (
-    <div className="space-y-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">할 일 입력</h1>
-        <p className="text-sm text-[#a0a0a0] mt-1">
-          오늘 할 일, 회의 내용, 업무 메모를 자유롭게 적으면 AI가 Todo를 추출해드립니다
+        <h1 style={{ fontSize: '17px', fontWeight: 600, color: '#fff', marginBottom: '4px' }}>할 일 입력</h1>
+        <p style={{ fontSize: '12px', color: '#6e6e6e', lineHeight: 1.5 }}>
+          오늘 할 일, 회의 내용, 업무 메모를 자유롭게 적으면 AI가 Todo를 추출합니다
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Note type selector */}
-        <div className="flex gap-2">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+        {/* Type tabs */}
+        <div style={{
+          display: 'inline-flex', gap: '2px', padding: '3px',
+          background: '#1a1a1a', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)',
+          alignSelf: 'flex-start',
+        }}>
           {NOTE_TYPES.map(t => (
             <button
-              key={t.value}
-              type="button"
-              onClick={() => setNoteType(t.value)}
-              className={[
-                'px-4 py-2 rounded-md text-sm font-medium transition-colors border',
-                noteType === t.value
-                  ? 'bg-[#faff69] text-[#151515] border-[#faff69]'
-                  : 'bg-transparent text-[#a0a0a0] border-[#343434] hover:border-[#a0a0a0]',
-              ].join(' ')}
-            >
-              {t.label}
-            </button>
+              key={t.value} type="button" onClick={() => setNoteType(t.value)}
+              style={{
+                fontSize: '12px', padding: '4px 12px', borderRadius: '4px', border: 'none',
+                background: noteType === t.value ? '#2a2a2a' : 'transparent',
+                color: noteType === t.value ? '#fff' : '#6e6e6e',
+                cursor: 'pointer', transition: 'all 0.12s',
+                fontFamily: 'inherit', fontWeight: noteType === t.value ? 500 : 400,
+              }}
+            >{t.label}</button>
           ))}
         </div>
 
-        {/* Main textarea */}
-        <div className="relative">
+        {/* Textarea */}
+        <div style={{ position: 'relative' }}>
           <textarea
             value={content}
             onChange={e => setContent(e.target.value)}
             placeholder={PLACEHOLDER}
-            rows={12}
+            rows={9}
             disabled={loading}
-            className={[
-              'w-full bg-[#141414] border rounded-lg px-4 py-3 text-white text-sm',
-              'placeholder:text-[#414141] resize-none leading-relaxed',
-              'focus:outline-none focus:ring-1 focus:ring-[#faff69] transition-colors',
-              loading ? 'opacity-50 cursor-not-allowed border-[#343434]' : 'border-[#343434] hover:border-[#414141]',
-            ].join(' ')}
+            style={{
+              width: '100%', background: '#111', border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '6px', padding: '12px 14px',
+              color: '#e8e8e8', fontSize: '13px', lineHeight: 1.75, resize: 'vertical',
+              outline: 'none', fontFamily: 'inherit', opacity: loading ? 0.5 : 1,
+            }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)' }}
+            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
           />
-          <span className="absolute bottom-3 right-3 text-xs text-[#414141]">
-            {content.length}자
-          </span>
+          {content.length > 0 && (
+            <span style={{
+              position: 'absolute', bottom: '8px', right: '10px',
+              fontSize: '10px', color: '#484848', pointerEvents: 'none',
+            }}>{content.length}</span>
+          )}
         </div>
 
         {error && (
-          <p className="text-sm text-red-400 bg-red-900/20 border border-red-900/40 rounded px-3 py-2">
+          <p style={{ fontSize: '12px', color: '#f87171', padding: '7px 10px', background: 'rgba(248,113,113,0.07)', borderRadius: '4px', border: '1px solid rgba(248,113,113,0.15)' }}>
             {error}
           </p>
         )}
 
         <button
-          type="submit"
-          disabled={!content.trim() || loading}
-          className={[
-            'w-full py-3 rounded-lg font-semibold text-sm transition-all',
-            !content.trim() || loading
-              ? 'bg-[#343434] text-[#414141] cursor-not-allowed'
-              : 'bg-[#faff69] text-[#151515] hover:bg-[#f4f692] active:scale-[0.98]',
-          ].join(' ')}
+          type="submit" disabled={!canSubmit}
+          style={{
+            padding: '10px', borderRadius: '6px', border: 'none', fontSize: '13px', fontWeight: 600,
+            background: canSubmit ? '#faff69' : '#1a1a1a',
+            color: canSubmit ? '#111' : '#484848',
+            cursor: canSubmit ? 'pointer' : 'not-allowed',
+            transition: 'all 0.15s', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+          }}
         >
           {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-[#414141] border-t-transparent rounded-full animate-spin" />
-              AI 분석 중...
-            </span>
-          ) : (
-            'AI로 Todo 추출하기'
-          )}
+            <>
+              <span style={{ width: '11px', height: '11px', border: '1.5px solid rgba(0,0,0,0.25)', borderTopColor: '#555', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.6s linear infinite' }} />
+              AI 분석 중…
+            </>
+          ) : 'AI로 Todo 추출'}
         </button>
       </form>
 
-      <div className="border-t border-[#343434] pt-5">
-        <p className="text-xs text-[#414141] leading-relaxed">
-          입력한 내용은 원문 그대로 저장됩니다. AI가 실행 항목을 추출하면 Review Queue에서 
-          승인/거절할 수 있습니다. 승인한 항목만 Todo로 등록됩니다.
-        </p>
-      </div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+
+      <p style={{ fontSize: '11px', color: '#484848', lineHeight: 1.7, paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        입력 내용은 원문 그대로 저장됩니다. AI가 실행 항목을 추출하면 검토 후 승인한 항목만 Todo로 등록됩니다.
+      </p>
     </div>
   )
 }

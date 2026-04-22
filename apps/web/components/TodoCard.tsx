@@ -1,9 +1,7 @@
 'use client'
 import { Todo } from '@/types'
-import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { cn, reluctanceColor, reluctanceLabel, statusLabel } from '@/lib/utils'
+import { reluctanceColor } from '@/lib/utils'
 
 interface TodoCardProps {
   todo: Todo
@@ -14,64 +12,111 @@ interface TodoCardProps {
 }
 
 export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCardProps) {
-  const isUrgent = todo.reluctance_score >= 7
-
   return (
-    <Card featured={featured} surface className={cn('transition-all', featured && 'border-[#faff69]')}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            {featured && (
-              <Badge variant="neon">오늘 가장 먼저</Badge>
-            )}
-            {todo.task && (
-              <span className="text-xs text-[#a0a0a0]">{todo.task.title}</span>
-            )}
-            <Badge variant={todo.status === 'in_progress' ? 'success' : 'default'}>
-              {statusLabel(todo.status)}
-            </Badge>
-          </div>
-          <p className={cn('font-semibold text-base leading-snug', featured ? 'text-[#faff69]' : 'text-white')}>
-            {todo.title}
-          </p>
-          {todo.description && (
-            <p className="text-sm text-[#a0a0a0] mt-1 line-clamp-2">{todo.description}</p>
-          )}
-          <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className={cn('text-xs', reluctanceColor(todo.reluctance_score))}>
-              😤 {reluctanceLabel(todo.reluctance_score)}
-            </span>
-            {todo.estimated_minutes && (
-              <span className="text-xs text-[#a0a0a0]">⏱ {todo.estimated_minutes}분</span>
-            )}
-            {isUrgent && (
-              <span className="text-xs text-[#faff69]">⚡ 오래 미뤄왔어요</span>
-            )}
-          </div>
+    <div style={{
+      padding: featured ? '14px 16px' : '10px 14px',
+      borderRadius: '6px',
+      border: featured ? '1px solid rgba(250,255,105,0.25)' : '1px solid var(--color-border)',
+      background: featured ? 'rgba(250,255,105,0.03)' : 'var(--color-surface)',
+      transition: 'border-color 0.15s',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+
+        {/* Score indicator */}
+        <div style={{
+          flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font-mono)',
+          background: 'var(--color-black)',
+          border: `1.5px solid ${
+            todo.reluctance_score >= 8 ? 'rgba(250,255,105,0.6)' :
+            todo.reluctance_score >= 6 ? 'rgba(245,158,11,0.5)' :
+            todo.reluctance_score >= 4 ? 'rgba(239,68,68,0.4)' :
+            'rgba(255,255,255,0.1)'
+          }`,
+          color: todo.reluctance_score >= 8 ? 'var(--color-neon-volt)' :
+                 todo.reluctance_score >= 6 ? '#f59e0b' :
+                 todo.reluctance_score >= 4 ? '#ef4444' : 'var(--color-gray-400)',
+        }}>
+          {todo.reluctance_score}
         </div>
 
-        {/* Reluctance score dial */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-bold"
-          style={{ borderColor: todo.reluctance_score >= 7 ? '#faff69' : todo.reluctance_score >= 5 ? '#f59e0b' : '#414141' }}>
-          {todo.reluctance_score}
+        {/* Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', flexWrap: 'wrap' }}>
+            {featured && (
+              <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--color-neon-volt)', textTransform: 'uppercase' }}>
+                가장 먼저
+              </span>
+            )}
+            {todo.source === 'ai-extracted' && (
+              <span style={{ fontSize: '10px', color: 'var(--color-gray-500)' }}>AI</span>
+            )}
+          </div>
+
+          <p style={{
+            fontSize: featured ? '14px' : '13px',
+            fontWeight: featured ? 500 : 400,
+            color: 'var(--color-white)',
+            lineHeight: 1.4,
+            wordBreak: 'keep-all',
+          }}>
+            {todo.title}
+          </p>
+
+          {todo.description && (
+            <p style={{ fontSize: '12px', color: 'var(--color-gray-400)', marginTop: '3px', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              {todo.description}
+            </p>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '11px', color: reluctanceColorHex(todo.reluctance_score) }}>
+              {reluctanceText(todo.reluctance_score)}
+            </span>
+            {todo.estimated_minutes && (
+              <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
+                {todo.estimated_minutes}분
+              </span>
+            )}
+            {todo.snoozed_count > 0 && (
+              <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
+                {todo.snoozed_count}회 미룸
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {todo.status !== 'done' && (
-        <div className="flex gap-2 mt-3 pt-3 border-t border-[#343434]">
+      {todo.status !== 'done' && (onStart || onDone || onSnooze) && (
+        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-border)' }}>
           {todo.status === 'pending' && onStart && (
             <Button variant="neon" size="sm" onClick={() => onStart(todo.id)}>
-              {featured ? '10분만 시작하기 →' : '시작'}
+              {featured ? '지금 시작' : '시작'}
             </Button>
           )}
           {todo.status === 'in_progress' && onDone && (
             <Button variant="neon" size="sm" onClick={() => onDone(todo.id)}>완료</Button>
           )}
           {onSnooze && (
-            <Button variant="ghost" size="sm" onClick={() => onSnooze(todo.id)}>나중에</Button>
+            <Button variant="ghost" size="sm" onClick={() => onSnooze(todo.id)}>미루기</Button>
           )}
         </div>
       )}
-    </Card>
+    </div>
   )
+}
+
+function reluctanceText(score: number): string {
+  if (score >= 8) return '매우 싫음'
+  if (score >= 6) return '꽤 싫음'
+  if (score >= 4) return '약간 싫음'
+  return '무난함'
+}
+
+function reluctanceColorHex(score: number): string {
+  if (score >= 8) return 'var(--color-neon-volt)'
+  if (score >= 6) return '#f59e0b'
+  if (score >= 4) return '#ef4444'
+  return 'var(--color-gray-500)'
 }
