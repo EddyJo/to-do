@@ -1,6 +1,6 @@
 // User instruction: "gemini로 바꿔줘"
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { supabase } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 import type { Note, AISummary, AISuggestion } from '@/types'
 
 export interface ExtractedItem {
@@ -78,13 +78,14 @@ function getClient(): GoogleGenerativeAI {
 }
 
 export async function extractActionItems(rawContent: string): Promise<ExtractedItem[]> {
-  const model = getClient().getGenerativeModel({ model: 'gemini-1.5-flash-8b' })
+  const model = getClient().getGenerativeModel({ model: 'gemini-2.0-flash' })
   const result = await model.generateContent(buildExtractionPrompt(rawContent))
   const text = result.response.text()
   return parseAIResponse(text)
 }
 
 export async function extractFromNote(note: Note): Promise<AIExtractionResult> {
+  const supabase = createServerClient()
   const items = await extractActionItems(note.raw_content)
 
   const summaryPayload = {
