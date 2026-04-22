@@ -25,7 +25,14 @@ export default function NotesPage() {
   useEffect(() => {
     fetch('/api/notes')
       .then(r => r.json())
-      .then(data => { setNotes(Array.isArray(data) ? data : []); setLoading(false) })
+      .then(data => {
+        const notes = Array.isArray(data) ? data : []
+        notes.forEach(n => {
+          if (Array.isArray(n.ai_summary)) n.ai_summary = n.ai_summary[0] ?? null
+        })
+        setNotes(notes)
+        setLoading(false)
+      })
   }, [])
 
   const filtered = filter === 'all' ? notes : notes.filter(n => n.note_type === filter)
