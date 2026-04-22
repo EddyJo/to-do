@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { href: '/capture', label: '기록' },
   { href: '/',        label: '오늘' },
   { href: '/review',  label: '제안' },
+  { href: '/notes',   label: '노트' },
 ]
 
 export function NavBar() {
