@@ -78,7 +78,7 @@ function getClient(): GoogleGenerativeAI {
 }
 
 export async function extractActionItems(rawContent: string): Promise<ExtractedItem[]> {
-  const model = getClient().getGenerativeModel({ model: 'gemini-2.0-flash' })
+  const model = getClient().getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
   const result = await model.generateContent(buildExtractionPrompt(rawContent))
   const text = result.response.text()
   return parseAIResponse(text)
