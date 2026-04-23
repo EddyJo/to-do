@@ -1,3 +1,4 @@
+// User instruction: "오늘할일에 아무것도 안뜨는데 원인이 뭐야? 해결해봐"
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
@@ -12,18 +13,23 @@ const TODAY_COUNT = 5
 export default function HomePage() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [prioritizing, setPrioritizing] = useState(false)
   const [lastPrioritized, setLastPrioritized] = useState<string | null>(null)
   const { toast, showToast, dismissToast } = useToast()
 
   const load = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch('/api/todos')
-      if (!res.ok) throw new Error('fetch failed')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setTodos(Array.isArray(data) ? data : [])
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[home] load error:', msg)
+      setError(msg)
       setTodos([])
     } finally {
       setLoading(false)
@@ -107,13 +113,21 @@ export default function HomePage() {
       <MorningRetro />
       <DailyQuote />
 
+      {/* Error state */}
+      {error && (
+        <div style={{ padding: '12px 16px', borderRadius: '6px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <p style={{ fontSize: '12px', color: '#f87171', marginBottom: '4px', fontWeight: 500 }}>데이터를 불러오지 못했어요</p>
+          <p style={{ fontSize: '11px', color: '#9a4040', fontFamily: 'monospace' }}>{error}</p>
+        </div>
+      )}
+
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {[...Array(3)].map((_, i) => (
             <div key={i} style={{ height: '72px', background: '#161616', borderRadius: '6px', opacity: 0.5 }} />
           ))}
         </div>
-      ) : todos.length === 0 ? (
+      ) : !error && todos.length === 0 ? (
         <div style={{ padding: '52px 24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px' }}>
           <p style={{ fontSize: '20px', marginBottom: '10px' }}>☁︎</p>
           <p style={{ fontSize: '14px', fontWeight: 500, color: '#fff', marginBottom: '6px' }}>아직 아무것도 없어요</p>
