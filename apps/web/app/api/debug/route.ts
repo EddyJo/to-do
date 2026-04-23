@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       if (insertErr) skipped.push({ id: s.id, title, error: insertErr.message })
       else created.push({ suggestionId: s.id, todoId: todo.id, title })
     }
-    return NextResponse.json({ repaired: created.length, skipped: skipped.length, created, skipped })
+    return NextResponse.json({ repaired: created.length, skipped: skipped.length, details: { created, skipped } })
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -126,5 +126,5 @@ export async function POST() {
     }
   }
 
-  return NextResponse.json({ repaired: created.length, skipped: skipped.length, created, skipped })
+  return NextResponse.json({ repaired: created.length, skipped: skipped.length, details: { created, skipped } })
 }
