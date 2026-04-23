@@ -3,10 +3,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
-  { href: '/capture', label: '기록' },
-  { href: '/',        label: '오늘' },
-  { href: '/review',  label: '제안' },
-  { href: '/notes',   label: '노트' },
+  { href: '/capture',      label: '기록' },
+  { href: '/',             label: '오늘' },
+  { href: '/review',       label: '제안' },
+  { href: '/notes',        label: '노트' },
+  { href: '/integrations', label: '연동' },
 ]
 
 export function NavBar() {
