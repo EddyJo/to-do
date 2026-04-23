@@ -1,6 +1,6 @@
-// User instruction: "내가 오늘 할일이나 업무 회의록, 업무 내용 등에 대해 이야기하면 해당 내용 바탕으로 todo생성해주는거고"
+// User instruction: "오늘할일에 아무것도 안뜨는데 원인이 뭐야? 해결해봐"
 import { NextResponse, after } from 'next/server'
-import { createNote } from '@/lib/db/notes'
+import { createServerClient } from '@/lib/supabase/server'
 import { extractFromNote } from '@/lib/ai/extract'
 import type { NoteType } from '@/types'
 
@@ -13,9 +13,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '내용을 입력해주세요' }, { status: 400 })
     }
 
-    const note = await createNote({ raw_content: content.trim(), note_type, task_id })
+    // Use server client (service role key bypasses RLS)
+    const supabase = createServerClient()
 
-    // AI extraction runs after response is sent — user gets immediate feedback
+    console.log('[capture] inserting note, url:', process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 40))
+
+    const { data: note, error: noteErr } = await supabase
+      .from('notes')
+      .insert({ raw_content: content.trim(), note_type, ...(task_id ? { task_id } : {}) })
+      .select()
+      .single()
+
+    if (noteErr) {
+      console.error('[capture] notes insert failed:', JSON.stringify(noteErr))
+      return NextResponse.json({ error: '저장 중 오류: ' + noteErr.message, code: noteErr.code }, { status: 500 })
+    }
+
     after(async () => {
       try {
         await extractFromNote(note)
@@ -26,7 +39,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ note }, { status: 202 })
   } catch (err) {
-    console.error('[capture] error:', err)
+    console.error('[capture] unexpected error:', err)
     return NextResponse.json({ error: '저장 중 오류가 발생했습니다' }, { status: 500 })
   }
 }
