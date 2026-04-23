@@ -31,38 +31,58 @@ export async function POST(req: Request) {
       .select('*, note:notes(id, raw_content, task_id, note_type), suggestion_todos(*)')
       .eq('id', id)
       .single()
-    if (fetchErr || !suggestion) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (fetchErr || !suggestion) {
+      console.error('[api/suggestions] fetch error:', fetchErr)
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
 
-    await supabase
+    // Mark suggestion as approved
+    const { error: approveErr } = await supabase
       .from('ai_suggestions')
       .update({ status: 'approved', approved_at: new Date().toISOString() })
       .eq('id', id)
+    if (approveErr) throw approveErr
 
-    let todo = null
+    // Build todo fields — prefer suggestion_todos data, fall back to suggestion.content
     const st = suggestion.suggestion_todos?.[0]
+    const title = st?.generated_todo_title ?? suggestion.content
+    const description = st?.generated_todo_description ?? null
+    const importance = st?.importance ?? 3
+    const reluctance = st?.reluctance_score ?? 5
+    const estimated_minutes = st?.estimated_minutes ?? null
+    const task_id = suggestion.note?.task_id ?? null
+
+    if (!title) {
+      console.error('[api/suggestions] no title to create todo from', { id })
+      return NextResponse.json({ ok: true, todo: null })
+    }
+
+    const { data: todo, error: todoErr } = await supabase
+      .from('todos')
+      .insert({
+        title,
+        description,
+        task_id,
+        source: 'ai-extracted',
+        importance,
+        reluctance_score: reluctance,
+        avoidance_score: calcAvoidanceScore(importance, reluctance),
+        status: 'pending',
+        snoozed_count: 0,
+      })
+      .select()
+      .single()
+
+    if (todoErr) {
+      console.error('[api/suggestions] todo insert error:', todoErr)
+      throw todoErr
+    }
+
     if (st) {
-      const importance = st.importance ?? 3
-      const reluctance = st.reluctance_score ?? 5
-      const { data: created, error: todoErr } = await supabase
-        .from('todos')
-        .insert({
-          title: st.generated_todo_title,
-          description: st.generated_todo_description ?? null,
-          task_id: suggestion.note?.task_id ?? null,
-          source: 'ai-extracted',
-          importance,
-          reluctance_score: reluctance,
-          avoidance_score: calcAvoidanceScore(importance, reluctance),
-          status: 'pending',
-          snoozed_count: 0,
-        })
-        .select()
-        .single()
-      if (todoErr) throw todoErr
-      todo = created
       await supabase.from('suggestion_todos').update({ approved_yn: true }).eq('id', st.id)
     }
 
+    console.info('[api/suggestions] approved', { suggestionId: id, todoId: todo?.id, title })
     return NextResponse.json({ ok: true, todo })
   } catch (err) {
     console.error('[api/suggestions] POST error:', err)
