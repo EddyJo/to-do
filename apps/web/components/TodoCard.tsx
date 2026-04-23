@@ -1,7 +1,6 @@
 'use client'
 import { Todo } from '@/types'
 import { Button } from '@/components/ui/Button'
-import { reluctanceColor } from '@/lib/utils'
 
 interface TodoCardProps {
   todo: Todo
@@ -24,7 +23,7 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
 
         {/* Score indicator */}
         <div style={{
-          flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%',
+          flexShrink: 0, width: '30px', height: '30px', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font-mono)',
           background: 'var(--color-black)',
@@ -52,13 +51,16 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
             {todo.source === 'ai-extracted' && (
               <span style={{ fontSize: '10px', color: 'var(--color-gray-500)' }}>AI</span>
             )}
+            {todo.snoozed_count > 0 && (
+              <span style={{ fontSize: '10px', color: 'var(--color-gray-500)' }}>{todo.snoozed_count}번 넘겼어요</span>
+            )}
           </div>
 
           <p style={{
-            fontSize: featured ? '14px' : '13px',
+            fontSize: featured ? '15px' : '14px',
             fontWeight: featured ? 500 : 400,
             color: 'var(--color-white)',
-            lineHeight: 1.4,
+            lineHeight: 1.45,
             wordBreak: 'keep-all',
           }}>
             {todo.title}
@@ -70,36 +72,26 @@ export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCard
             </p>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '11px', color: reluctanceColorHex(todo.reluctance_score) }}>
               {reluctanceText(todo.reluctance_score)}
             </span>
-            {todo.estimated_minutes && (
-              <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
-                {todo.estimated_minutes}분
-              </span>
-            )}
-            {todo.snoozed_count > 0 && (
-              <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
-                {todo.snoozed_count}번 넘겼어요
-              </span>
-            )}
           </div>
         </div>
       </div>
 
       {todo.status !== 'done' && (onStart || onDone || onSnooze) && (
-        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
           {todo.status === 'pending' && onStart && (
-            <Button variant="neon" size="sm" onClick={() => onStart(todo.id)}>
+            <Button variant="neon" size="md" onClick={() => onStart(todo.id)} style={{ touchAction: 'manipulation' }}>
               {featured ? '지금 할게요' : '시작할게요'}
             </Button>
           )}
           {todo.status === 'in_progress' && onDone && (
-            <Button variant="neon" size="sm" onClick={() => onDone(todo.id)}>완료</Button>
+            <Button variant="neon" size="md" onClick={() => onDone(todo.id)} style={{ touchAction: 'manipulation' }}>완료</Button>
           )}
-          {onSnooze && (
-            <Button variant="ghost" size="sm" onClick={() => onSnooze(todo.id)}>미루기</Button>
+          {onSnooze && todo.status !== 'in_progress' && (
+            <Button variant="ghost" size="md" onClick={() => onSnooze(todo.id)} style={{ touchAction: 'manipulation' }}>미루기</Button>
           )}
         </div>
       )}

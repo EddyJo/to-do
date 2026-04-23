@@ -16,9 +16,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       danger:  'bg-transparent text-[#f87171] border border-[rgba(248,113,113,0.2)] hover:bg-[rgba(248,113,113,0.08)]',
     }
     const sizes = {
-      sm: 'text-xs px-2.5 py-1.5 rounded',
-      md: 'text-sm px-4 py-2 rounded-md',
-      lg: 'text-sm px-5 py-2.5 rounded-md font-semibold',
+      sm: 'text-xs px-3 py-2 rounded min-h-[36px]',
+      md: 'text-sm px-4 py-2.5 rounded-md min-h-[44px]',
+      lg: 'text-sm px-5 py-3 rounded-md font-semibold min-h-[48px]',
     }
     return (
       <button ref={ref} className={cn(base, variants[variant], sizes[size], className)} {...props}>
