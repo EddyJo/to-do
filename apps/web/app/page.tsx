@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { getTodos, updateTodo, snoozeTodo } from '@/lib/db/todos'
 import { TodoCard } from '@/components/TodoCard'
 import { DailyQuote } from '@/components/DailyQuote'
 import { MorningRetro } from '@/components/MorningRetro'
@@ -19,8 +18,16 @@ export default function HomePage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    try { const data = await getTodos({ status: 'pending' }); setTodos(data) }
-    finally { setLoading(false) }
+    try {
+      const res = await fetch('/api/todos')
+      if (!res.ok) throw new Error('fetch failed')
+      const data = await res.json()
+      setTodos(Array.isArray(data) ? data : [])
+    } catch {
+      setTodos([])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -37,14 +44,23 @@ export default function HomePage() {
 
   async function handleStart(id: string) {
     setTodos(prev => prev.map(t => t.id === id ? { ...t, status: 'in_progress' as const } : t))
-    try { await updateTodo(id, { status: 'in_progress' }) }
-    catch { load() }
+    try {
+      await fetch(`/api/todos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'in_progress' }),
+      })
+    } catch { load() }
   }
 
   async function handleDone(id: string) {
     setTodos(prev => prev.filter(t => t.id !== id))
     try {
-      await updateTodo(id, { status: 'done' })
+      await fetch(`/api/todos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'done' }),
+      })
       showToast('잘 해냈어요 ✓')
     } catch { load() }
   }
@@ -52,8 +68,12 @@ export default function HomePage() {
   async function handleSnooze(id: string) {
     setTodos(prev => prev.filter(t => t.id !== id))
     try {
-      await snoozeTodo(id)
-      showToast('미뤘어요. 나중에 다시 볼게요')
+      await fetch(`/api/todos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'snooze' }),
+      })
+      showToast('미뤘어요. 내일 다시 볼게요')
     } catch { load() }
   }
 

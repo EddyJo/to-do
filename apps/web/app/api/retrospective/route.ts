@@ -7,15 +7,20 @@ function getClient() {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
 }
 
+function kstDayBounds(daysAgo: number) {
+  const now = new Date()
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+  const kstDate = kstNow.toISOString().slice(0, 10)
+  const base = new Date(`${kstDate}T00:00:00+09:00`)
+  base.setDate(base.getDate() - daysAgo)
+  const end = new Date(base)
+  end.setDate(end.getDate() + 1)
+  return { dayStart: base.toISOString(), dayEnd: end.toISOString() }
+}
+
 async function getYesterdayTodos() {
   const supabase = createServerClient()
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  yesterday.setHours(0, 0, 0, 0)
-  const dayStart = yesterday.toISOString()
-
-  const dayEnd = new Date(yesterday)
-  dayEnd.setHours(23, 59, 59, 999)
+  const { dayStart, dayEnd } = kstDayBounds(1)
 
   // 완료: 어제 done 처리된 것
   const { data: done } = await supabase
@@ -23,14 +28,14 @@ async function getYesterdayTodos() {
     .select('title')
     .eq('status', 'done')
     .gte('updated_at', dayStart)
-    .lte('updated_at', dayEnd.toISOString())
+    .lte('updated_at', dayEnd)
 
   // 미완료: 어제 이전에 만들어졌는데 아직 pending/snoozed인 것
   const { data: pending } = await supabase
     .from('todos')
     .select('title, reluctance_score, importance')
     .in('status', ['pending', 'snoozed'])
-    .lt('created_at', new Date().toISOString().slice(0, 10))
+    .lt('created_at', dayStart)
     .order('avoidance_score', { ascending: false })
     .limit(5)
 
