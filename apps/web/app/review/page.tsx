@@ -17,7 +17,7 @@ export default function ReviewPage() {
     try {
       const res = await fetch('/api/suggestions')
       if (!res.ok) throw new Error('fetch failed')
-      setSuggestions(await res.json())
+      const data = await res.json(); setSuggestions(Array.isArray(data) ? data : [])
     } catch {
       setError('제안을 불러오지 못했어요')
     } finally {

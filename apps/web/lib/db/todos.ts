@@ -2,7 +2,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import type { Todo, CreateTodoInput } from '@/types'
 
-const supabase = createServerClient()
+function getSupabase() { return createServerClient() }
 
 function calcAvoidanceScore(importance: number, reluctance: number, snoozed = 0) {
   return importance * 2 + reluctance + snoozed * 0.5
@@ -22,7 +22,7 @@ export function calcPrioritizedScore(todo: Todo, now: Date = new Date()): number
 }
 
 export async function getTodos(filters?: { status?: string; task_id?: string }): Promise<Todo[]> {
-  let query = supabase.from('todos').select('*, task:tasks(id,title)')
+  let query = getSupabase().from('todos').select('*, task:tasks(id,title)')
   if (filters?.status) query = query.eq('status', filters.status)
   if (filters?.task_id) query = query.eq('task_id', filters.task_id)
   const { data, error } = await query.order('avoidance_score', { ascending: false })
@@ -31,7 +31,7 @@ export async function getTodos(filters?: { status?: string; task_id?: string }):
 }
 
 export async function getTopAvoidedTodo(): Promise<Todo | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('todos')
     .select('*, task:tasks(id,title)')
     .eq('status', 'pending')
@@ -46,7 +46,7 @@ export async function createTodo(input: CreateTodoInput): Promise<Todo> {
   const importance = input.importance ?? 3
   const reluctance = input.reluctance_score ?? 5
   const avoidance_score = calcAvoidanceScore(importance, reluctance)
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('todos')
     .insert({
       ...input,
@@ -73,13 +73,13 @@ export async function updateTodo(id: string, input: Partial<Todo>): Promise<Todo
       current?.snoozed_count ?? 0,
     )
   }
-  const { data, error } = await supabase.from('todos').update(updates).eq('id', id).select().single()
+  const { data, error } = await getSupabase().from('todos').update(updates).eq('id', id).select().single()
   if (error) throw error
   return data
 }
 
 export async function getTodoById(id: string): Promise<Todo | null> {
-  const { data, error } = await supabase.from('todos').select('*').eq('id', id).single()
+  const { data, error } = await getSupabase().from('todos').select('*').eq('id', id).single()
   if (error) throw error
   return data
 }
@@ -96,7 +96,7 @@ export async function snoozeTodo(id: string): Promise<Todo> {
 }
 
 export async function prioritizeBacklog(): Promise<Todo[]> {
-  const { data: todos, error } = await supabase
+  const { data: todos, error } = await getSupabase()
     .from('todos')
     .select('*')
     .in('status', ['pending', 'snoozed'])
@@ -111,11 +111,11 @@ export async function prioritizeBacklog(): Promise<Todo[]> {
 
   await Promise.all(
     updates.map(({ id, avoidance_score }) =>
-      supabase.from('todos').update({ avoidance_score }).eq('id', id)
+      getSupabase().from('todos').update({ avoidance_score }).eq('id', id)
     )
   )
 
-  const { data: updated } = await supabase
+  const { data: updated } = await getSupabase()
     .from('todos')
     .select('*')
     .in('status', ['pending', 'snoozed'])

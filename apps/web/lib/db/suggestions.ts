@@ -1,10 +1,10 @@
+// User instruction: "tc로 확인하고 그다음 로컬에서 확인하고 그다음 서버에 배포해"
 import { createServerClient } from '@/lib/supabase/server'
 import type { AISuggestion, SuggestionStatus, Todo } from '@/types'
 import { createTodo } from '@/lib/db/todos'
 
-const supabase = createServerClient()
-
 export async function getPendingSuggestions(): Promise<AISuggestion[]> {
+  const supabase = createServerClient()
   const { data, error } = await supabase
     .from('ai_suggestions')
     .select('*, note:notes(id, raw_content, task_id, note_type), suggestion_todos(*)')
@@ -18,6 +18,7 @@ export async function updateSuggestionStatus(
   id: string,
   status: SuggestionStatus,
 ): Promise<AISuggestion> {
+  const supabase = createServerClient()
   const updates: Partial<AISuggestion> = {
     status,
     approved_at: status === 'approved' ? new Date().toISOString() : null,
@@ -32,7 +33,6 @@ export async function updateSuggestionStatus(
   return data
 }
 
-// Approve suggestion → create Todo if it has suggestion_todos
 export async function approveSuggestion(suggestion: AISuggestion): Promise<Todo | null> {
   await updateSuggestionStatus(suggestion.id, 'approved')
   if (!suggestion.suggestion_todos?.length) return null
@@ -44,6 +44,7 @@ export async function approveSuggestion(suggestion: AISuggestion): Promise<Todo 
     task_id: suggestion.note?.task_id ?? undefined,
     source: 'ai-extracted',
   } as Parameters<typeof createTodo>[0])
+  const supabase = createServerClient()
   await supabase.from('suggestion_todos').update({ approved_yn: true }).eq('id', st.id)
   return todo
 }
