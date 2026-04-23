@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { shouldShowRetro, RetroMood } from '@/lib/retro/utils'
+import { RetroMood } from '@/lib/retro/utils'
 
-const STORAGE_KEY = 'retro_seen_date'
+const CACHE_KEY = 'retro_cache_v2'
 
 const MOOD_CONFIG: Record<RetroMood, { color: string; borderColor: string; icon: string }> = {
   encouraging: { color: '#4ade80', borderColor: 'rgba(74,222,128,0.25)', icon: '✦' },
@@ -18,15 +18,49 @@ interface RetroData {
   pendingCount?: number
 }
 
+function kstDateStr(): string {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+}
+
+function kstHour(): number {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000).getUTCHours()
+}
+
+function loadCache(): { date: string; data: RetroData; dismissed: boolean } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveCache(data: RetroData, dismissed = false) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ date: kstDateStr(), data, dismissed }))
+  } catch {}
+}
+
 export function MorningRetro() {
   const [retro, setRetro] = useState<RetroData | null>(null)
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const lastSeen = localStorage.getItem(STORAGE_KEY)
-    if (!shouldShowRetro(new Date(), lastSeen)) return
+    // Only show after 8am KST
+    if (kstHour() < 8) return
 
+    const cached = loadCache()
+    const todayKST = kstDateStr()
+
+    // Use cached result if it's from today
+    if (cached?.date === todayKST) {
+      if (!cached.dismissed) {
+        setRetro(cached.data)
+        setVisible(true)
+      }
+      return
+    }
+
+    // Fetch fresh result
     setLoading(true)
     fetch('/api/retrospective', { method: 'POST' })
       .then(r => r.json())
@@ -34,15 +68,15 @@ export function MorningRetro() {
         if (!data.error) {
           setRetro(data)
           setVisible(true)
+          saveCache(data, false)
         }
       })
-      .catch(() => {/* 실패하면 조용히 무시 */})
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
   function dismiss() {
-    const todayStr = new Date().toISOString().slice(0, 10)
-    localStorage.setItem(STORAGE_KEY, todayStr)
+    if (retro) saveCache(retro, true)
     setVisible(false)
   }
 
@@ -69,7 +103,6 @@ export function MorningRetro() {
       borderRadius: '8px',
       position: 'relative',
     }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ color: cfg.color, fontSize: '13px' }}>{cfg.icon}</span>
@@ -89,12 +122,9 @@ export function MorningRetro() {
         >×</button>
       </div>
 
-      {/* Highlight */}
       <p style={{ fontSize: '15px', fontWeight: 600, color: cfg.color, marginBottom: '8px', lineHeight: 1.3, wordBreak: 'keep-all' }}>
         {retro.highlight}
       </p>
-
-      {/* Message */}
       <p style={{ fontSize: '13px', color: '#9a9a9a', lineHeight: 1.7, wordBreak: 'keep-all' }}>
         {retro.message}
       </p>

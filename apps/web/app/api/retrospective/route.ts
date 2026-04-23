@@ -62,7 +62,18 @@ export async function POST() {
     }
 
     return NextResponse.json({ ...retro, completedCount: completed.length, pendingCount: pending.length })
-  } catch (err) {
+  } catch (err: unknown) {
+    const is429 = (err as any)?.status === 429
+    if (is429) {
+      // Rate limit — return a static fallback so the UI still works
+      return NextResponse.json({
+        mood: 'mixed',
+        message: '오늘도 하나씩 해나가다 보면 돼요. 가장 미뤄온 것부터 시작해보세요.',
+        highlight: '오늘이 기회예요',
+        completedCount: 0,
+        pendingCount: 0,
+      })
+    }
     console.error('[retrospective]', err)
     return NextResponse.json({ error: '회고를 불러오지 못했어요' }, { status: 500 })
   }
