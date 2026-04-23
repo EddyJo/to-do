@@ -45,7 +45,6 @@ export async function GET() {
   return NextResponse.json({
     repaired: created.length,
     skipped: skipped.length,
-    created,
-    skipped,
+    details: { created, skipped },
   })
 }
