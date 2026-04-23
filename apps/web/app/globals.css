@@ -33,17 +33,28 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { font-size: 14px; }
+html {
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
 
 body {
   background-color: var(--color-black);
   color: var(--color-white);
   font-family: var(--font-sans);
-  font-size: 0.9375rem; /* 13.125px — dense but readable */
+  font-size: 0.9375rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  word-break: keep-all; /* Korean: no awkward mid-word breaks */
+  word-break: keep-all;
+  overscroll-behavior-y: none;
+}
+
+/* Remove tap highlight on interactive elements */
+a, button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* typography */

@@ -1,4 +1,3 @@
-// User instruction: "오늘할일에 아무것도 안뜨는데 원인이 뭐야? 해결해봐"
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
@@ -28,7 +27,6 @@ export default function HomePage() {
       setTodos(Array.isArray(data) ? data : [])
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      console.error('[home] load error:', msg)
       setError(msg)
       setTodos([])
     } finally {
@@ -87,11 +85,11 @@ export default function HomePage() {
   const backlog   = todos.slice(TODAY_COUNT)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginBottom: '3px' }}>오늘 마주할 것들</h1>
+          <h1 style={{ fontSize: '19px', fontWeight: 600, color: '#fff', marginBottom: '3px' }}>오늘 마주할 것들</h1>
           <p style={{ fontSize: '12px', color: '#6e6e6e' }}>가장 오래 외면해온 것이 맨 위에 있어요</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
@@ -100,20 +98,16 @@ export default function HomePage() {
           )}
           <button
             onClick={handlePrioritize} disabled={prioritizing}
-            style={{ fontSize: '12px', padding: '5px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#6e6e6e', cursor: 'pointer', opacity: prioritizing ? 0.4 : 1, transition: 'opacity 0.15s' }}
+            style={{ fontSize: '13px', padding: '8px 12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#6e6e6e', cursor: 'pointer', opacity: prioritizing ? 0.4 : 1, transition: 'opacity 0.15s', minHeight: '40px', touchAction: 'manipulation' }}
           >
             {prioritizing ? '정렬 중…' : '다시 정렬'}
           </button>
-          <Link href="/capture" style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '4px', background: '#faff69', color: '#111', fontWeight: 600, whiteSpace: 'nowrap' }}>
-            + 기록
-          </Link>
         </div>
       </div>
 
       <MorningRetro />
       <DailyQuote />
 
-      {/* Error state */}
       {error && (
         <div style={{ padding: '12px 16px', borderRadius: '6px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
           <p style={{ fontSize: '12px', color: '#f87171', marginBottom: '4px', fontWeight: 500 }}>데이터를 불러오지 못했어요</p>
@@ -124,7 +118,7 @@ export default function HomePage() {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {[...Array(3)].map((_, i) => (
-            <div key={i} style={{ height: '72px', background: '#161616', borderRadius: '6px', opacity: 0.5 }} />
+            <div key={i} style={{ height: '80px', background: '#161616', borderRadius: '6px', opacity: 0.5 }} />
           ))}
         </div>
       ) : !error && todos.length === 0 ? (
@@ -134,7 +128,7 @@ export default function HomePage() {
           <p style={{ fontSize: '12px', color: '#6e6e6e', marginBottom: '24px', lineHeight: 1.7 }}>
             오늘 머릿속에 맴도는 것들을 꺼내보세요.<br/>AI가 할 일로 정리해드릴게요.
           </p>
-          <Link href="/capture" style={{ display: 'inline-block', fontSize: '13px', padding: '9px 22px', background: '#faff69', color: '#111', borderRadius: '4px', fontWeight: 600 }}>
+          <Link href="/capture" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '14px', padding: '12px 24px', background: '#faff69', color: '#111', borderRadius: '6px', fontWeight: 700, touchAction: 'manipulation' }}>
             지금 꺼내기
           </Link>
         </div>
@@ -145,7 +139,7 @@ export default function HomePage() {
               <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6e6e6e' }}>지금 할 것</span>
               <span style={{ fontSize: '11px', color: '#484848' }}>{todayList.length}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {todayList.map((todo, i) => (
                 <TodoCard key={todo.id} todo={todo} featured={i === 0} onStart={handleStart} onDone={handleDone} onSnooze={handleSnooze} />
               ))}
@@ -158,7 +152,7 @@ export default function HomePage() {
                 <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#484848' }}>내일 이후</span>
                 <span style={{ fontSize: '11px', color: '#484848' }}>{backlog.length}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.5 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', opacity: 0.5 }}>
                 {backlog.map(todo => (
                   <TodoCard key={todo.id} todo={todo} onSnooze={handleSnooze} />
                 ))}
