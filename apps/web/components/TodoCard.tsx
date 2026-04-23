@@ -1,7 +1,5 @@
 'use client'
 import { Todo } from '@/types'
-import { Button } from '@/components/ui/Button'
-import { reluctanceColor } from '@/lib/utils'
 
 interface TodoCardProps {
   todo: Todo
@@ -11,112 +9,118 @@ interface TodoCardProps {
   onDone?: (id: string) => void
 }
 
-export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCardProps) {
+function ReluctanceDots({ score }: { score: number }) {
+  const filled = Math.round(score / 2)
   return (
-    <div style={{
-      padding: featured ? '14px 16px' : '10px 14px',
-      borderRadius: '6px',
-      border: featured ? '1px solid rgba(250,255,105,0.25)' : '1px solid var(--color-border)',
-      background: featured ? 'rgba(250,255,105,0.03)' : 'var(--color-surface)',
-      transition: 'border-color 0.15s',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-
-        {/* Score indicator */}
-        <div style={{
-          flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font-mono)',
-          background: 'var(--color-black)',
-          border: `1.5px solid ${
-            todo.reluctance_score >= 8 ? 'rgba(250,255,105,0.6)' :
-            todo.reluctance_score >= 6 ? 'rgba(245,158,11,0.5)' :
-            todo.reluctance_score >= 4 ? 'rgba(239,68,68,0.4)' :
-            'rgba(255,255,255,0.1)'
-          }`,
-          color: todo.reluctance_score >= 8 ? 'var(--color-neon-volt)' :
-                 todo.reluctance_score >= 6 ? '#f59e0b' :
-                 todo.reluctance_score >= 4 ? '#ef4444' : 'var(--color-gray-400)',
-        }}>
-          {todo.reluctance_score}
-        </div>
-
-        {/* Content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', flexWrap: 'wrap' }}>
-            {featured && (
-              <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--color-neon-volt)', textTransform: 'uppercase' }}>
-                1순위
-              </span>
-            )}
-            {todo.source === 'ai-extracted' && (
-              <span style={{ fontSize: '10px', color: 'var(--color-gray-500)' }}>AI</span>
-            )}
-          </div>
-
-          <p style={{
-            fontSize: featured ? '14px' : '13px',
-            fontWeight: featured ? 500 : 400,
-            color: 'var(--color-white)',
-            lineHeight: 1.4,
-            wordBreak: 'keep-all',
-          }}>
-            {todo.title}
-          </p>
-
-          {todo.description && (
-            <p style={{ fontSize: '12px', color: 'var(--color-gray-400)', marginTop: '3px', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              {todo.description}
-            </p>
-          )}
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', color: reluctanceColorHex(todo.reluctance_score) }}>
-              {reluctanceText(todo.reluctance_score)}
-            </span>
-            {todo.estimated_minutes && (
-              <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
-                {todo.estimated_minutes}분
-              </span>
-            )}
-            {todo.snoozed_count > 0 && (
-              <span style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
-                {todo.snoozed_count}번 넘겼어요
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {todo.status !== 'done' && (onStart || onDone || onSnooze) && (
-        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-border)' }}>
-          {todo.status === 'pending' && onStart && (
-            <Button variant="neon" size="sm" onClick={() => onStart(todo.id)}>
-              {featured ? '지금 할게요' : '시작할게요'}
-            </Button>
-          )}
-          {todo.status === 'in_progress' && onDone && (
-            <Button variant="neon" size="sm" onClick={() => onDone(todo.id)}>완료</Button>
-          )}
-          {onSnooze && (
-            <Button variant="ghost" size="sm" onClick={() => onSnooze(todo.id)}>미루기</Button>
-          )}
-        </div>
-      )}
-    </div>
+    <span style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} style={{
+          width: '5px', height: '5px', borderRadius: '50%',
+          background: i < filled ? 'rgba(250,255,105,0.7)' : '#2a2a2a',
+          display: 'inline-block', flexShrink: 0,
+        }} />
+      ))}
+    </span>
   )
 }
 
-function reluctanceText(score: number): string {
-  if (score >= 8) return '정말 하기 싫음'
-  if (score >= 6) return '좀 하기 싫음'
-  if (score >= 4) return '살짝 귀찮음'
-  return '할 만해요'
-}
+export function TodoCard({ todo, featured, onStart, onSnooze, onDone }: TodoCardProps) {
+  const inProgress = todo.status === 'in_progress'
 
-function reluctanceColorHex(score: number): string {
-  if (score >= 8) return 'var(--color-neon-volt)'
-  if (score >= 6) return '#f59e0b'
-  if (score >= 4) return '#ef4444'
-  return 'var(--color-gray-500)'
+  return (
+    <div style={{
+      padding: '14px 16px',
+      borderRadius: '10px',
+      border: featured
+        ? '1px solid rgba(250,255,105,0.2)'
+        : '1px solid rgba(255,255,255,0.06)',
+      borderLeft: featured ? '2px solid rgba(250,255,105,0.5)' : undefined,
+      background: featured ? 'rgba(250,255,105,0.02)' : '#111',
+    }}>
+      {/* 상단 메타 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+        {featured && (
+          <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#faff69', textTransform: 'uppercase' }}>
+            1순위
+          </span>
+        )}
+        {inProgress && (
+          <span style={{ fontSize: '10px', fontWeight: 600, color: '#4a9eff', letterSpacing: '0.06em' }}>진행중</span>
+        )}
+        {todo.source === 'ai-extracted' && (
+          <span style={{ fontSize: '10px', color: '#484848' }}>AI</span>
+        )}
+        {todo.snoozed_count > 0 && (
+          <span style={{ fontSize: '10px', color: '#484848' }}>{todo.snoozed_count}번 미룸</span>
+        )}
+      </div>
+
+      {/* 제목 */}
+      <p style={{
+        fontSize: '14px',
+        fontWeight: featured ? 500 : 400,
+        color: '#f0f0f0',
+        lineHeight: 1.55,
+        margin: '0 0 12px',
+        wordBreak: 'keep-all',
+      }}>
+        {todo.title}
+      </p>
+
+      {/* 하단: 귀찮음 점수 + 버튼 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <ReluctanceDots score={todo.reluctance_score} />
+
+        <div style={{ flex: 1 }} />
+
+        {onSnooze && !inProgress && (
+          <button
+            onClick={() => onSnooze(todo.id)}
+            style={{
+              padding: '7px 12px', borderRadius: '6px',
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+              color: '#6e6e6e', fontSize: '12px', cursor: 'pointer',
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#aaa')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#6e6e6e')}
+          >
+            미루기
+          </button>
+        )}
+
+        {inProgress && onDone && (
+          <button
+            onClick={() => onDone(todo.id)}
+            style={{
+              padding: '7px 16px', borderRadius: '6px',
+              background: '#4ade80', border: 'none',
+              color: '#111', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            완료
+          </button>
+        )}
+
+        {!inProgress && onStart && (
+          <button
+            onClick={() => onStart(todo.id)}
+            style={{
+              padding: '7px 16px', borderRadius: '6px',
+              background: featured ? '#faff69' : 'rgba(255,255,255,0.08)',
+              border: 'none',
+              color: featured ? '#111' : '#d0d0d0',
+              fontSize: '12px', fontWeight: featured ? 700 : 500,
+              cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
+            시작할게요
+          </button>
+        )}
+      </div>
+    </div>
+  )
 }
