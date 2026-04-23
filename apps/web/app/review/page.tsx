@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { AISuggestion } from '@/types'
-import { getPendingSuggestions, approveSuggestion, updateSuggestionStatus } from '@/lib/db/suggestions'
 import { AISuggestionCard } from '@/components/AISuggestionCard'
 import { Button } from '@/components/ui/Button'
 import { Toast, useToast } from '@/components/ui/Toast'
@@ -16,8 +15,9 @@ export default function ReviewPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getPendingSuggestions()
-      setSuggestions(data)
+      const res = await fetch('/api/suggestions')
+      if (!res.ok) throw new Error('fetch failed')
+      setSuggestions(await res.json())
     } catch {
       setError('제안을 불러오지 못했어요')
     } finally {
@@ -30,7 +30,12 @@ export default function ReviewPage() {
   async function handleApprove(s: AISuggestion) {
     setSuggestions(p => p.filter(x => x.id !== s.id))
     try {
-      await approveSuggestion(s)
+      const res = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: s.id }),
+      })
+      if (!res.ok) throw new Error('approve failed')
       showToast('할 일에 추가했어요 ✓')
     } catch { load() }
   }
@@ -38,14 +43,22 @@ export default function ReviewPage() {
   async function handleReject(id: string) {
     setSuggestions(p => p.filter(x => x.id !== id))
     try {
-      await updateSuggestionStatus(id, 'rejected')
+      await fetch('/api/suggestions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'rejected' }),
+      })
     } catch { load() }
   }
 
   async function handleDefer(id: string) {
     setSuggestions(p => p.filter(x => x.id !== id))
     try {
-      await updateSuggestionStatus(id, 'deferred')
+      await fetch('/api/suggestions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'deferred' }),
+      })
       showToast('나중에 다시 볼게요')
     } catch { load() }
   }
@@ -54,7 +67,13 @@ export default function ReviewPage() {
     const ids = suggestions.map(s => s.id)
     setSuggestions([])
     try {
-      await Promise.all(ids.map(id => updateSuggestionStatus(id, 'rejected')))
+      await Promise.all(ids.map(id =>
+        fetch('/api/suggestions', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, status: 'rejected' }),
+        })
+      ))
     } catch { load() }
   }
 
